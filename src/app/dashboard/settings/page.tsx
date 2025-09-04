@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { MoreHorizontal, PlusCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import Image from "next/image"
 
 const users = [
     { id: "USR001", name: "Admin Utama", username: "admin", role: "Admin", status: "Active" },
@@ -44,10 +45,11 @@ export default function SettingsPage() {
         </p>
       </div>
       <Tabs defaultValue="users" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="users">Manajemen Pengguna</TabsTrigger>
-          <TabsTrigger value="fees">Pengaturan Tarif</TabsTrigger>
-          <TabsTrigger value="outlet">Konfigurasi Outlet</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="users">Pengguna</TabsTrigger>
+          <TabsTrigger value="fees">Tarif</TabsTrigger>
+          <TabsTrigger value="payment">Akun Pembayaran</TabsTrigger>
+          <TabsTrigger value="outlet">Outlet</TabsTrigger>
         </TabsList>
         
         <TabsContent value="users">
@@ -108,7 +110,7 @@ export default function SettingsPage() {
               <CardDescription>
                 Atur biaya administrasi untuk setiap jenis transaksi yang relevan.
               </CardDescription>
-            </CardHeader>
+            </Header>
             <CardContent className="space-y-4">
               <div className="rounded-md border">
                 <Table>
@@ -134,6 +136,52 @@ export default function SettingsPage() {
               </div>
                <div className="flex justify-end">
                     <Button>Simpan Perubahan Tarif</Button>
+                </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="payment">
+          <Card>
+            <CardHeader>
+              <CardTitle>Akun Pembayaran Outlet</CardTitle>
+              <CardDescription>
+                Atur rekening bank dan kode QRIS yang akan ditampilkan kepada pelanggan di formulir transaksi.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                        <h3 className="font-medium">Rekening Bank untuk Transfer</h3>
+                        <div className="space-y-2">
+                            <Label htmlFor="bankName">Nama Bank</Label>
+                            <Input id="bankName" defaultValue="Bank QR Tunai" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="accountNumber">Nomor Rekening</Label>
+                            <Input id="accountNumber" defaultValue="123-456-7890" />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="accountHolder">Nama Pemilik Rekening</Label>
+                            <Input id="accountHolder" defaultValue="PT QR Tunai Sejahtera" />
+                        </div>
+                    </div>
+                    <div className="space-y-4">
+                        <h3 className="font-medium">Kode QRIS</h3>
+                        <div className="space-y-2">
+                            <Label htmlFor="qrisUrl">URL Gambar QRIS</Label>
+                            <Input id="qrisUrl" defaultValue="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=example" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Pratinjau QRIS</Label>
+                            <div className="p-2 border rounded-md bg-white w-fit">
+                                <Image src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=example" data-ai-hint="QR code" alt="QRIS Code" width={150} height={150} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <div className="flex justify-end pt-4">
+                    <Button>Simpan Akun Pembayaran</Button>
                 </div>
             </CardContent>
           </Card>
