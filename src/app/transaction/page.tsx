@@ -1,8 +1,11 @@
+
+'use client';
+import { Suspense } from 'react';
 import Link from "next/link"
 import { TransactionForm } from "@/components/transaction-form"
 import { QrCode } from "lucide-react"
 
-export default function TransactionPage() {
+function TransactionPageContents() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
         <Link href="/" className="flex items-center gap-2 mb-6">
@@ -13,3 +16,13 @@ export default function TransactionPage() {
     </div>
   )
 }
+
+export default function TransactionPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TransactionPageContents />
+    </Suspense>
+  )
+}
+
+    

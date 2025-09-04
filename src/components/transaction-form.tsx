@@ -1,12 +1,14 @@
+
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useFormState, useFormStatus } from "react-dom"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { ArrowLeft, Loader2, Send } from "lucide-react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 
 import { submitTransactionAction } from "@/lib/actions"
 import { Button } from "@/components/ui/button"
@@ -39,6 +41,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { CopyButton } from "./copy-button"
 
 const formSchema = z.object({
   transactionType: z.enum(["Tarik Tunai", "Setor Tunai", "Transfer", "Pembayaran"]),
@@ -49,9 +52,12 @@ const formSchema = z.object({
   verification: z.literal(true, {
     errorMap: () => ({ message: "Anda harus menyetujui verifikasi ini." }),
   }),
+  reference: z.string().min(1, "Nomor referensi tidak valid."),
 })
 
 type TransactionType = "Tarik Tunai" | "Setor Tunai" | "Transfer" | "Pembayaran" | ""
+type FormValues = z.infer<typeof formSchema>;
+
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -67,20 +73,77 @@ function SubmitButton() {
   )
 }
 
-export function TransactionForm() {
+function TransactionFormContent() {
+  const searchParams = useSearchParams()
+  const transactionRef = searchParams.get('ref')
+
   const [formState, action] = useFormState(submitTransactionAction, { message: "", success: false })
   const [selectedTransaction, setSelectedTransaction] = useState<TransactionType>("")
-  const form = useForm<z.infer<typeof formSchema>>({
+  
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       bankName: "",
       accountNumber: "",
       amount: 0,
       notes: "",
+      reference: transactionRef || "",
     },
   })
 
+  useEffect(() => {
+    if (transactionRef) {
+      form.setValue('reference', transactionRef)
+      const savedData = sessionStorage.getItem(`transaction-${transactionRef}`);
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        form.reset(parsedData);
+        if(parsedData.transactionType) {
+            setSelectedTransaction(parsedData.transactionType)
+        }
+      }
+    }
+  }, [transactionRef, form])
+
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+        if(transactionRef) {
+            sessionStorage.setItem(`transaction-${transactionRef}`, JSON.stringify(value));
+        }
+    });
+    return () => subscription.unsubscribe();
+  }, [form, transactionRef]);
+  
+  if (!transactionRef) {
+    return (
+        <Card className="w-full max-w-md">
+            <CardHeader>
+                <CardTitle>Link Tidak Valid</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Alert variant="destructive">
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>
+                        Nomor referensi transaksi tidak ditemukan. Silakan pindai QR code yang valid.
+                    </AlertDescription>
+                </Alert>
+            </CardContent>
+            <CardFooter>
+                 <Button variant="outline" className="w-full" asChild>
+                    <Link href="/">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Kembali ke Beranda
+                    </Link>
+                </Button>
+            </CardFooter>
+        </Card>
+    )
+  }
+
   if (formState.success) {
+    if (transactionRef) {
+        sessionStorage.removeItem(`transaction-${transactionRef}`);
+    }
     return (
       <Card className="w-full max-w-md">
         <CardHeader>
@@ -92,12 +155,16 @@ export function TransactionForm() {
             <AlertTitle>Berhasil!</AlertTitle>
             <AlertDescription>{formState.message}</AlertDescription>
           </Alert>
+          <div className="mt-4 rounded-md border bg-muted p-3 text-sm">
+            <p className="text-muted-foreground">Nomor Antrian Anda:</p>
+            <p className="font-mono font-semibold text-primary">{transactionRef}</p>
+          </div>
         </CardContent>
         <CardFooter>
           <Button variant="outline" className="w-full" asChild>
-            <Link href="/transaction">
+            <Link href="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Buat Transaksi Baru
+              Kembali ke Beranda
             </Link>
           </Button>
         </CardFooter>
@@ -109,6 +176,7 @@ export function TransactionForm() {
     <Card className="w-full max-w-md">
       <Form {...form}>
         <form action={action}>
+          <input type="hidden" {...form.register("reference")} />
           <CardHeader>
             <CardTitle>Formulir Transaksi</CardTitle>
             <CardDescription>
@@ -116,6 +184,16 @@ export function TransactionForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="space-y-2 rounded-md border bg-muted p-3">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <Label>Nomor Antrian Anda</Label>
+                        <p className="font-mono text-primary font-bold">{transactionRef}</p>
+                    </div>
+                    <CopyButton textToCopy={transactionRef} label="Salin" />
+                </div>
+            </div>
+
             <FormField
               control={form.control}
               name="transactionType"
@@ -150,7 +228,10 @@ export function TransactionForm() {
             {selectedTransaction === "Tarik Tunai" && (
                 <div className="space-y-2">
                     <Label>No. Rekening Outlet</Label>
-                    <Input readOnly value="123-456-7890 (Bank QR Tunai)" className="bg-muted"/>
+                    <div className="flex items-center gap-2">
+                        <Input readOnly value="123-456-7890 (Bank QR Tunai)" className="bg-muted flex-1"/>
+                        <CopyButton textToCopy="123-456-7890" />
+                    </div>
                     <p className="text-xs text-muted-foreground">Untuk transaksi Tarik Tunai, transfer ke rekening ini.</p>
                 </div>
             )}
@@ -245,3 +326,14 @@ export function TransactionForm() {
     </Card>
   )
 }
+
+
+export function TransactionForm() {
+    return (
+        <React.Suspense fallback={<div>Loading...</div>}>
+            <TransactionFormContent />
+        </React.Suspense>
+    )
+}
+
+    
