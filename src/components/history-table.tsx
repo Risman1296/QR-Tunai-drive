@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -13,7 +14,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, FileText } from "lucide-react"
+import { ArrowUpDown, FileText, Download } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -28,6 +29,8 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { transactionHistory as data, type Transaction } from "@/lib/data"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('id-ID', {
@@ -127,6 +130,9 @@ export const columns: ColumnDef<Transaction>[] = [
         const status = row.getValue("status") as string
         const variant = status === 'Completed' ? 'default' : status === 'Cancelled' ? 'destructive' : 'secondary';
         return <Badge variant={variant} className={status === 'Completed' ? 'bg-green-600' : ''}>{status}</Badge>
+    },
+    filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
     }
   },
   {
@@ -178,15 +184,42 @@ export function HistoryTable() {
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter berdasarkan ID transaksi..."
-          value={(table.getColumn("id")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("id")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
+      <div className="flex items-center justify-between py-4">
+        <div className="flex items-center gap-4">
+            <Input
+              placeholder="Filter berdasarkan ID transaksi..."
+              value={(table.getColumn("id")?.getFilterValue() as string) ?? ""}
+              onChange={(event) =>
+                table.getColumn("id")?.setFilterValue(event.target.value)
+              }
+              className="max-w-sm"
+            />
+            <Select
+              value={(table.getColumn('status')?.getFilterValue() as string) ?? ''}
+              onValueChange={(value) => table.getColumn('status')?.setFilterValue(value === 'all' ? null : value)}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Status</SelectItem>
+                <SelectItem value="Completed">Selesai</SelectItem>
+                <SelectItem value="Cancelled">Dibatalkan</SelectItem>
+              </SelectContent>
+            </Select>
+        </div>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                    <Download className="mr-2 h-4 w-4" />
+                    Ekspor
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                <DropdownMenuItem>Ekspor ke CSV</DropdownMenuItem>
+                <DropdownMenuItem>Ekspor ke PDF</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <div className="rounded-md border bg-card">
         <Table>
@@ -261,3 +294,5 @@ export function HistoryTable() {
     </div>
   )
 }
+
+    
