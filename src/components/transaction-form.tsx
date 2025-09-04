@@ -43,6 +43,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { CopyButton } from "./copy-button"
+import { Suspense } from "react"
 
 const formSchema = z.object({
   transactionType: z.enum(["Tarik Tunai", "Setor Tunai", "Transfer", "Pembayaran"]),
@@ -74,7 +75,7 @@ function SubmitButton() {
   )
 }
 
-export function TransactionForm() {
+function TransactionFormContent() {
   const searchParams = useSearchParams()
   const transactionRef = searchParams.get('ref')
 
@@ -91,6 +92,8 @@ export function TransactionForm() {
       reference: transactionRef || "",
     },
   })
+  
+  const quickAmounts = [100000, 200000, 500000, 1000000];
 
   useEffect(() => {
     if (transactionRef) {
@@ -227,13 +230,13 @@ export function TransactionForm() {
             />
 
             {selectedTransaction === "Tarik Tunai" && (
-                <div className="space-y-2">
-                    <Label>No. Rekening Outlet</Label>
+                <div className="space-y-2 p-3 rounded-md border border-accent">
+                    <Label className="text-accent-foreground">Rekening Tujuan Transfer</Label>
                     <div className="flex items-center gap-2">
-                        <Input readOnly value="123-456-7890 (Bank QR Tunai)" className="bg-muted flex-1"/>
-                        <CopyButton textToCopy="123-456-7890" />
+                        <Input readOnly value="123-456-7890 (Bank QR Tunai)" className="bg-muted flex-1 text-sm"/>
+                        <CopyButton textToCopy="1234567890" />
                     </div>
-                    <p className="text-xs text-muted-foreground">Untuk transaksi Tarik Tunai, transfer ke rekening ini.</p>
+                    <p className="text-xs text-muted-foreground">Untuk transaksi Tarik Tunai, silakan transfer jumlah yang Anda inginkan ke rekening di atas terlebih dahulu.</p>
                 </div>
             )}
             
@@ -242,7 +245,7 @@ export function TransactionForm() {
               name="bankName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nama Bank</FormLabel>
+                  <FormLabel>Nama Bank Anda</FormLabel>
                   <FormControl>
                     <Input placeholder="cth: Bank Central Asia" {...field} />
                   </FormControl>
@@ -256,7 +259,7 @@ export function TransactionForm() {
               name="accountNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>No. Rekening</FormLabel>
+                  <FormLabel>No. Rekening Anda</FormLabel>
                   <FormControl>
                     <Input type="tel" placeholder="cth: 0123456789" {...field} />
                   </FormControl>
@@ -271,12 +274,21 @@ export function TransactionForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Jumlah Transaksi</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">Rp</span>
-                      <Input type="number" placeholder="cth: 500000" className="pl-9" {...field} />
+                   <div className="space-y-2">
+                    <FormControl>
+                      <div className="relative">
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">Rp</span>
+                        <Input type="number" placeholder="cth: 500000" className="pl-9" {...field} />
+                      </div>
+                    </FormControl>
+                    <div className="grid grid-cols-4 gap-2">
+                      {quickAmounts.map(amount => (
+                          <Button key={amount} type="button" variant="outline" size="sm" onClick={() => form.setValue('amount', amount, { shouldValidate: true })}>
+                            {new Intl.NumberFormat('id-ID').format(amount / 1000)}k
+                          </Button>
+                      ))}
                     </div>
-                  </FormControl>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -326,4 +338,12 @@ export function TransactionForm() {
       </Form>
     </Card>
   )
+}
+
+export function TransactionForm() {
+    return (
+        <Suspense fallback={<div className="w-full max-w-md text-center"><p>Memuat formulir...</p></div>}>
+            <TransactionFormContent />
+        </Suspense>
+    )
 }
