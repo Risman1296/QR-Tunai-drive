@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { ArrowLeft, Loader2, Send } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { useSearchParams } from "next/navigation"
 
 import { submitTransactionAction } from "@/lib/actions"
@@ -44,9 +45,11 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { CopyButton } from "./copy-button"
 import { Suspense } from "react"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 const formSchema = z.object({
   transactionType: z.enum(["Tarik Tunai", "Setor Tunai", "Transfer", "Pembayaran"]),
+  paymentMethod: z.enum(["Transfer", "QRIS", "EDC"]).optional(),
   bankName: z.string().min(2, "Nama bank minimal 2 karakter."),
   accountNumber: z.string().min(5, "Nomor rekening minimal 5 digit.").regex(/^\d+$/, "Nomor rekening hanya boleh berisi angka."),
   accountHolderName: z.string().min(2, "Nama pemilik rekening minimal 2 karakter."),
@@ -56,9 +59,13 @@ const formSchema = z.object({
     errorMap: () => ({ message: "Anda harus menyetujui verifikasi ini." }),
   }),
   reference: z.string().min(1, "Nomor referensi tidak valid."),
-})
+}).refine(data => !(data.transactionType === "Tarik Tunai" && !data.paymentMethod), {
+    message: "Silakan pilih metode pembayaran.",
+    path: ["paymentMethod"],
+});
 
 type TransactionType = "Tarik Tunai" | "Setor Tunai" | "Transfer" | "Pembayaran" | ""
+type PaymentMethod = "Transfer" | "QRIS" | "EDC" | ""
 type FormValues = z.infer<typeof formSchema>;
 
 
@@ -82,6 +89,7 @@ function TransactionFormContent() {
 
   const [formState, action] = useFormState(submitTransactionAction, { message: "", success: false })
   const [selectedTransaction, setSelectedTransaction] = useState<TransactionType>("")
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>("");
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -106,6 +114,9 @@ function TransactionFormContent() {
         form.reset(parsedData);
         if(parsedData.transactionType) {
             setSelectedTransaction(parsedData.transactionType)
+        }
+        if(parsedData.paymentMethod) {
+            setSelectedPaymentMethod(parsedData.paymentMethod)
         }
       }
     }
@@ -210,6 +221,10 @@ function TransactionFormContent() {
                     onValueChange={(value: TransactionType) => {
                       field.onChange(value)
                       setSelectedTransaction(value)
+                      if (value !== 'Tarik Tunai') {
+                        setSelectedPaymentMethod('');
+                        form.setValue('paymentMethod', undefined);
+                      }
                     }}
                     defaultValue={field.value}
                     name={field.name}
@@ -232,14 +247,75 @@ function TransactionFormContent() {
             />
 
             {selectedTransaction === "Tarik Tunai" && (
-                <div className="space-y-2 p-3 rounded-md border border-accent">
-                    <Label className="text-accent-foreground">Rekening Tujuan Transfer</Label>
-                    <div className="flex items-center gap-2">
-                        <Input readOnly value="123-456-7890 (Bank QR Tunai)" className="bg-muted flex-1 text-sm"/>
-                        <CopyButton textToCopy="1234567890" />
-                    </div>
-                    <p className="text-xs text-muted-foreground">Untuk transaksi Tarik Tunai, silakan transfer jumlah yang Anda inginkan ke rekening di atas terlebih dahulu.</p>
-                </div>
+                <FormField
+                control={form.control}
+                name="paymentMethod"
+                render={({ field }) => (
+                  <FormItem className="space-y-3 rounded-md border border-accent p-4">
+                    <FormLabel className="font-semibold">Pilih Metode Pembayaran</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={(value: PaymentMethod) => {
+                            field.onChange(value)
+                            setSelectedPaymentMethod(value)
+                        }}
+                        defaultValue={field.value}
+                        className="flex flex-col space-y-2"
+                      >
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="Transfer" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Transfer Bank</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="QRIS" />
+                          </FormControl>
+                          <FormLabel className="font-normal">QRIS</FormLabel>
+                        </FormItem>
+                         <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="EDC" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Kartu Debit/Kredit (EDC)</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+
+                    {selectedPaymentMethod === 'Transfer' && (
+                        <div className="space-y-2 pt-2">
+                            <Label className="text-sm">Rekening Tujuan Transfer</Label>
+                            <div className="flex items-center gap-2">
+                                <Input readOnly value="123-456-7890 (Bank QR Tunai)" className="bg-muted flex-1 text-sm"/>
+                                <CopyButton textToCopy="1234567890" />
+                            </div>
+                            <p className="text-xs text-muted-foreground">Silakan transfer jumlah yang Anda inginkan ke rekening di atas terlebih dahulu.</p>
+                        </div>
+                    )}
+                     {selectedPaymentMethod === 'QRIS' && (
+                        <div className="space-y-2 pt-2">
+                            <Label className="text-sm">Pindai untuk Membayar</Label>
+                            <div className="flex justify-center p-2 bg-white rounded-md">
+                                <Image src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=example" data-ai-hint="QR code" alt="QRIS Code" width={150} height={150} />
+                            </div>
+                            <p className="text-xs text-muted-foreground text-center">Pindai kode QRIS ini dengan aplikasi e-wallet atau mobile banking Anda.</p>
+                        </div>
+                    )}
+                    {selectedPaymentMethod === 'EDC' && (
+                         <div className="space-y-2 pt-2">
+                             <Alert>
+                                <AlertTitle>Siapkan Kartu Anda</AlertTitle>
+                                <AlertDescription>
+                                    Transaksi akan diproses menggunakan mesin EDC di loket. Mohon siapkan kartu Debit atau Kredit Anda.
+                                </AlertDescription>
+                            </Alert>
+                         </div>
+                    )}
+                  </FormItem>
+                )}
+              />
             )}
             
             <FormField
