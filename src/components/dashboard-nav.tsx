@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, History, LogOut, QrCode } from "lucide-react";
+import { LayoutDashboard, History, LogOut, QrCode, Settings } from "lucide-react";
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarFooter } from "@/components/ui/sidebar";
 import { Separator } from "./ui/separator";
 
@@ -12,6 +12,7 @@ export function DashboardNav() {
   const menuItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/dashboard/history", label: "Riwayat", icon: History },
+    { href: "/dashboard/settings", label: "Pengaturan", icon: Settings },
   ];
 
   return (
