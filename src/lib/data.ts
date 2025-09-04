@@ -176,9 +176,13 @@ export const bankAccounts: BankAccount[] = [
     balance: 112300000,
     logo: 'https://upload.wikimedia.org/wikipedia/commons/6/68/BANK_BRI_logo.svg',
     history: [
-      { id: 'BRI01', description: 'Trf dari Siti A.', amount: 2000000, type: 'credit', time: '09:50' },
-      { id: 'BRI02', description: 'Gaji Karyawan', amount: -15000000, type: 'debit', time: 'Yesterday' },
-      { id: 'BRI03', description: 'Trf dari Toko Jaya', amount: 3500000, type: 'credit', time: 'Yesterday' },
+      { id: 'BRI01', description: 'Trf dari Siti A.', amount: 2000000, type: 'credit', time: '11:50' },
+      { id: 'BRI02', description: 'Tarik Tunai TXN123', amount: -500000, type: 'debit', time: '11:45' },
+      { id: 'BRI03', description: 'Setoran Tunai TXN122', amount: 3500000, type: 'credit', time: '11:30' },
+      { id: 'BRI04', description: 'Biaya Admin', amount: -6500, type: 'debit', time: '11:00' },
+      { id: 'BRI05', description: 'Trf dari Toko Jaya', amount: 1800000, type: 'credit', time: '10:15' },
+      { id: 'BRI06', description: 'Gaji Karyawan', amount: -15000000, type: 'debit', time: 'Yesterday' },
+      { id: 'BRI07', description: 'Trf dari PT Sejahtera', amount: 7500000, type: 'credit', time: 'Yesterday' },
     ]
   },
   {
