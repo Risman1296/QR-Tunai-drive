@@ -74,7 +74,7 @@ function SubmitButton() {
   )
 }
 
-function TransactionFormContent() {
+export function TransactionForm() {
   const searchParams = useSearchParams()
   const transactionRef = searchParams.get('ref')
 
@@ -327,14 +327,3 @@ function TransactionFormContent() {
     </Card>
   )
 }
-
-
-export function TransactionForm() {
-    return (
-        <React.Suspense fallback={<div>Loading...</div>}>
-            <TransactionFormContent />
-        </React.Suspense>
-    )
-}
-
-    
