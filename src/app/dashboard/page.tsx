@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { Bell, CheckCircle, ArrowUpRight, ArrowDownLeft, Wallet } from 'lucide-react';
+import { Bell, CheckCircle, ArrowUpRight, ArrowDownLeft, Wallet, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -15,7 +15,7 @@ function formatCurrency(amount: number) {
 }
 
 function PendingTransactionCard({ transaction }: { transaction: Transaction }) {
-  const { id, type, bank, accountNumber, amount, notes, date } = transaction;
+  const { id, type, bank, accountNumber, customerName, amount, notes, date } = transaction;
 
   return (
     <Card className="shadow-md hover:shadow-lg transition-shadow">
@@ -38,6 +38,13 @@ function PendingTransactionCard({ transaction }: { transaction: Transaction }) {
             <div className="flex items-center gap-2">
                 <span className="font-mono text-sm">{accountNumber}</span>
                 <CopyButton textToCopy={accountNumber} label="" />
+            </div>
+        </div>
+        <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Atas Nama</span>
+            <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">{customerName}</span>
             </div>
         </div>
         <div className="flex justify-between items-center">

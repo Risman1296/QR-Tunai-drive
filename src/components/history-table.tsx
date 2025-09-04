@@ -53,6 +53,7 @@ const InvoiceDetails = ({ transaction }: { transaction: Transaction }) => (
             <div className="flex justify-between"><span className="text-muted-foreground">Jenis Transaksi:</span> <span>{transaction.type}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Bank:</span> <span>{transaction.bank}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">No. Rekening:</span> <span className="font-mono">{transaction.accountNumber}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Atas Nama:</span> <span>{transaction.customerName || '-'}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Catatan:</span> <span>{transaction.notes || '-'}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Kasir:</span> <span>{transaction.cashier}</span></div>
         </div>
@@ -90,9 +91,9 @@ export const columns: ColumnDef<Transaction>[] = [
     accessorKey: "type",
     header: "Jenis",
   },
-  {
-    accessorKey: "bank",
-    header: "Bank",
+   {
+    accessorKey: "customerName",
+    header: "Atas Nama",
   },
   {
     accessorKey: "accountNumber",

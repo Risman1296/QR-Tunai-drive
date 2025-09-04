@@ -49,6 +49,7 @@ const formSchema = z.object({
   transactionType: z.enum(["Tarik Tunai", "Setor Tunai", "Transfer", "Pembayaran"]),
   bankName: z.string().min(2, "Nama bank minimal 2 karakter."),
   accountNumber: z.string().min(5, "Nomor rekening minimal 5 digit.").regex(/^\d+$/, "Nomor rekening hanya boleh berisi angka."),
+  accountHolderName: z.string().min(2, "Nama pemilik rekening minimal 2 karakter."),
   amount: z.coerce.number().min(10000, "Jumlah minimal Rp 10.000."),
   notes: z.string().max(100, "Catatan maksimal 100 karakter.").optional(),
   verification: z.literal(true, {
@@ -87,6 +88,7 @@ function TransactionFormContent() {
     defaultValues: {
       bankName: "",
       accountNumber: "",
+      accountHolderName: "",
       amount: 0,
       notes: "",
       reference: transactionRef || "",
@@ -268,6 +270,23 @@ function TransactionFormContent() {
               )}
             />
             
+            <FormField
+              control={form.control}
+              name="accountHolderName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nama Pemilik Rekening</FormLabel>
+                  <FormControl>
+                    <Input placeholder="cth: Budi Setiawan" {...field} />
+                  </FormControl>
+                   <FormDescription>
+                    Nama harus sesuai dengan yang tertera di rekening bank.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="amount"
