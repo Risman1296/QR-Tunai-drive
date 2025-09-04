@@ -1,12 +1,18 @@
 
 
 import Image from 'next/image';
-import { Bell, CheckCircle, ArrowUpRight, ArrowDownLeft, User, XCircle, TrendingUp, DollarSign, ReceiptText, Ban } from 'lucide-react';
+import { Bell, CheckCircle, ArrowUpRight, ArrowDownLeft, User, XCircle, TrendingUp, DollarSign, ReceiptText, Ban, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { pendingTransactions, type Transaction } from '@/lib/data';
 import { CopyButton } from '@/components/copy-button';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('id-ID', {
@@ -88,54 +94,60 @@ export default function DashboardPage() {
         <p className="text-muted-foreground">Selamat datang! Kelola transaksi drive-thru di sini.</p>
       </div>
 
-       <div>
-        <h2 className="text-2xl font-semibold flex items-center mb-4">
-            <TrendingUp className="mr-3 h-6 w-6 text-accent" />
-            Kinerja Hari Ini
-        </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Pendapatan</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(260000)}</div>
-                <p className="text-xs text-muted-foreground">+Rp 40.000 dari kemarin</p>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Transaksi</CardTitle>
-                <ReceiptText className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                <div className="text-2xl font-bold">+52</div>
-                <p className="text-xs text-muted-foreground">+8 dari kemarin</p>
-                </CardContent>
-            </Card>
-             <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Transaksi Selesai</CardTitle>
-                <CheckCircle className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                <div className="text-2xl font-bold">48</div>
-                <p className="text-xs text-muted-foreground">Tingkat keberhasilan 92.3%</p>
-                </CardContent>
-            </Card>
-             <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Transaksi Dibatalkan</CardTitle>
-                <Ban className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                <div className="text-2xl font-bold">4</div>
-                <p className="text-xs text-muted-foreground">Tingkat pembatalan 7.7%</p>
-                </CardContent>
-            </Card>
-        </div>
-      </div>
+       <Accordion type="single" collapsible defaultValue="item-1">
+        <AccordionItem value="item-1" className="border-b-0">
+          <AccordionTrigger className="text-2xl font-semibold flex items-center mb-4 hover:no-underline">
+            <div className="flex items-center">
+              <TrendingUp className="mr-3 h-6 w-6 text-accent" />
+              Kinerja Hari Ini
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Pendapatan</CardTitle>
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                    <div className="text-2xl font-bold">{formatCurrency(260000)}</div>
+                    <p className="text-xs text-muted-foreground">+Rp 40.000 dari kemarin</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Transaksi</CardTitle>
+                    <ReceiptText className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                    <div className="text-2xl font-bold">+52</div>
+                    <p className="text-xs text-muted-foreground">+8 dari kemarin</p>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Transaksi Selesai</CardTitle>
+                    <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                    <div className="text-2xl font-bold">48</div>
+                    <p className="text-xs text-muted-foreground">Tingkat keberhasilan 92.3%</p>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Transaksi Dibatalkan</CardTitle>
+                    <Ban className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                    <div className="text-2xl font-bold">4</div>
+                    <p className="text-xs text-muted-foreground">Tingkat pembatalan 7.7%</p>
+                    </CardContent>
+                </Card>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
       
       <Separator />
 
