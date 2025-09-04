@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/sidebar"
 import { DashboardNav } from "@/components/dashboard-nav"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Separator } from "@/components/ui/separator"
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
@@ -18,7 +19,16 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       </Sidebar>
       <SidebarInset>
         <header className="flex h-16 items-center justify-between border-b px-6">
-          <SidebarTrigger />
+          <div className="flex items-center gap-4">
+            <SidebarTrigger />
+            <div className="hidden md:flex items-center gap-3">
+               <Separator orientation="vertical" className="h-6" />
+                <div>
+                    <p className="text-sm font-semibold">LC-PST</p>
+                    <p className="text-xs text-muted-foreground">Jl. Jenderal Sudirman No. 123</p>
+                </div>
+            </div>
+          </div>
           <div className="flex items-center gap-4">
             <p className="text-sm font-medium">Kasir: Admin</p>
             <Avatar className="h-8 w-8">
