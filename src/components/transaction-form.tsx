@@ -418,7 +418,7 @@ function TransactionFormContent() {
                   <div className="space-y-1 leading-none">
                     <FormLabel>Verifikasi</FormLabel>
                     <FormDescription>
-                      Saya menyatakan semua informasi yang dimasukkan valid. Adapun kesalahan penulisan adalah tanggung jawab saya.
+                      Saya menyatakan semua informasi yang dimasukkan valid. Saya telah membaca dan menyetujui <Link href="/terms" className="underline hover:text-primary" target="_blank">Syarat & Ketentuan</Link> yang berlaku.
                     </FormDescription>
                     <FormMessage />
                   </div>

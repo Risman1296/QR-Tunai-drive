@@ -168,8 +168,8 @@ export default function Home() {
         </section>
       </main>
       <footer className="bg-card border-t">
-        <div className="container py-6 text-center text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} QR Tunai Drive. Semua hak dilindungi.</p>
+        <div className="container py-6 text-center text-muted-foreground text-sm">
+          <p>&copy; {new Date().getFullYear()} QR Tunai Drive. Semua hak dilindungi. | <Link href="/terms" className="underline hover:text-primary">Syarat & Ketentuan</Link></p>
         </div>
       </footer>
     </div>
