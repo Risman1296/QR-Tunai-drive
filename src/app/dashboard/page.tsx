@@ -81,7 +81,7 @@ function PendingTransactionCard({ transaction }: { transaction: Transaction }) {
 function BankAccountCard({ account }: { account: BankAccount }) {
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-base font-medium">{account.bankName}</CardTitle>
         <Image src={account.logo} alt={`${account.bankName} logo`} width={80} height={20} className="object-contain" />
       </CardHeader>
