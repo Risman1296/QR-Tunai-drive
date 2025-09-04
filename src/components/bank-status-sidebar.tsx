@@ -6,6 +6,7 @@ import { bankAccounts, type BankAccount, type BankAccountHistory } from "@/lib/d
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('id-ID', {
