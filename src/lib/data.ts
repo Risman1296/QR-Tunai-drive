@@ -112,3 +112,59 @@ export const transactionHistory: Transaction[] = [
     cashier: 'Admin',
   },
 ];
+
+export type BankAccountHistory = {
+  id: string;
+  description: string;
+  amount: number;
+  type: 'credit' | 'debit';
+  time: string;
+};
+
+export type BankAccount = {
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+  balance: number;
+  logo: string;
+  history: BankAccountHistory[];
+}
+
+export const bankAccounts: BankAccount[] = [
+  {
+    bankName: 'Bank Central Asia',
+    accountNumber: '123-456-7890',
+    accountHolder: 'Outlet Pusat QR Tunai',
+    balance: 150750000,
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia_logo.svg',
+    history: [
+      { id: 'BCA01', description: 'Trf dari Rina S.', amount: 500000, type: 'credit', time: '10:15' },
+      { id: 'BCA02', description: 'Bayar listrik', amount: -750000, type: 'debit', time: '09:30' },
+      { id: 'BCA03', description: 'Trf dari Budi P.', amount: 200000, type: 'credit', time: '08:45' },
+    ]
+  },
+  {
+    bankName: 'Bank Mandiri',
+    accountNumber: '098-765-4321',
+    accountHolder: 'Outlet Pusat QR Tunai',
+    balance: 85200000,
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Bank_Mandiri_logo_2016.svg',
+    history: [
+      { id: 'MDR01', description: 'Trf dari CV Maju', amount: 1250000, type: 'credit', time: '10:05' },
+      { id: 'MDR02', description: 'Setoran tunai', amount: 5000000, type: 'credit', time: '09:00' },
+      { id: 'MDR03', description: 'Biaya sewa', amount: -2500000, type: 'debit', time: 'Yesterday' },
+    ]
+  },
+  {
+    bankName: 'Bank Rakyat Indonesia',
+    accountNumber: '111-222-3334',
+    accountHolder: 'Outlet Pusat QR Tunai',
+    balance: 112300000,
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/BANK_BRI_logo.svg/2560px-BANK_BRI_logo.svg.png',
+    history: [
+      { id: 'BRI01', description: 'Trf dari Siti A.', amount: 2000000, type: 'credit', time: '09:50' },
+      { id: 'BRI02', description: 'Gaji Karyawan', amount: -15000000, type: 'debit', time: 'Yesterday' },
+      { id: 'BRI03', description: 'Trf dari Toko Jaya', amount: 3500000, type: 'credit', time: 'Yesterday' },
+    ]
+  }
+];
