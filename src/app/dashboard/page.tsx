@@ -1,11 +1,12 @@
 
 import Image from 'next/image';
-import { Bell, CheckCircle, ArrowUpRight, ArrowDownLeft, Wallet, User, XCircle, TrendingUp, DollarSign, ReceiptText, Ban } from 'lucide-react';
+import { Bell, CheckCircle, ArrowUpRight, ArrowDownLeft, Wallet, User, XCircle, TrendingUp, DollarSign, ReceiptText, Ban, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { pendingTransactions, bankAccounts, type Transaction, type BankAccount, type BankAccountHistory } from '@/lib/data';
 import { CopyButton } from '@/components/copy-button';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('id-ID', {
@@ -131,8 +132,8 @@ export default function DashboardPage() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(21540000)}</div>
-                <p className="text-xs text-muted-foreground">+12.5% dari kemarin</p>
+                <div className="text-2xl font-bold">{formatCurrency(260000)}</div>
+                <p className="text-xs text-muted-foreground">+Rp 40.000 dari kemarin</p>
                 </CardContent>
             </Card>
             <Card>
@@ -168,17 +169,24 @@ export default function DashboardPage() {
         </div>
       </div>
       
-      <div>
-        <h2 className="text-2xl font-semibold flex items-center mb-4">
-            <Wallet className="mr-3 h-6 w-6 text-accent" />
-            Status Rekening Outlet
-        </h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {bankAccounts.map(account => (
-                <BankAccountCard key={account.accountNumber} account={account} />
-            ))}
-        </div>
-      </div>
+       <Accordion type="single" collapsible className="w-full" defaultValue="item-1">
+        <AccordionItem value="item-1">
+          <AccordionTrigger className="text-2xl font-semibold flex items-center mb-4 [&[data-state=open]>svg]:text-primary">
+            <div className="flex items-center">
+              <Wallet className="mr-3 h-6 w-6 text-accent" />
+              Status Rekening Outlet
+            </div>
+            <ChevronDown className="h-6 w-6 transition-transform duration-200" />
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {bankAccounts.map(account => (
+                    <BankAccountCard key={account.accountNumber} account={account} />
+                ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
       <Separator />
 
@@ -204,5 +212,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
