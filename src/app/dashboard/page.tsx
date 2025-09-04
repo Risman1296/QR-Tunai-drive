@@ -1,13 +1,12 @@
 
 
 import Image from 'next/image';
-import { Bell, CheckCircle, ArrowUpRight, ArrowDownLeft, Wallet, User, XCircle, TrendingUp, DollarSign, ReceiptText, Ban, ChevronDown } from 'lucide-react';
+import { Bell, CheckCircle, ArrowUpRight, ArrowDownLeft, User, XCircle, TrendingUp, DollarSign, ReceiptText, Ban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { pendingTransactions, bankAccounts, type Transaction, type BankAccount, type BankAccountHistory } from '@/lib/data';
+import { pendingTransactions, type Transaction } from '@/lib/data';
 import { CopyButton } from '@/components/copy-button';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('id-ID', {
@@ -78,47 +77,6 @@ function PendingTransactionCard({ transaction }: { transaction: Transaction }) {
   );
 }
 
-function BankAccountCard({ account }: { account: BankAccount }) {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-base font-medium">{account.bankName}</CardTitle>
-        <Image src={account.logo} alt={`${account.bankName} logo`} width={80} height={20} className="object-contain" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{formatCurrency(account.balance)}</div>
-        <p className="text-xs text-muted-foreground">{account.accountHolder} - {account.accountNumber}</p>
-        
-        <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1" className="border-b-0">
-                <AccordionTrigger className="text-sm py-2 hover:no-underline justify-start gap-1">
-                    Lihat Riwayat
-                </AccordionTrigger>
-                <AccordionContent>
-                    <div className="space-y-3 pt-2">
-                        {account.history.map((item: BankAccountHistory) => (
-                            <div key={item.id} className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    {item.type === 'credit' ? <ArrowDownLeft className="h-4 w-4 text-green-500" /> : <ArrowUpRight className="h-4 w-4 text-red-500" />}
-                                    <div>
-                                        <p className="text-sm font-medium leading-none">{item.description}</p>
-                                        <p className="text-xs text-muted-foreground">{item.time}</p>
-                                    </div>
-                                </div>
-                                <div className={`text-sm font-medium ${item.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
-                                    {formatCurrency(item.amount)}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </AccordionContent>
-            </AccordionItem>
-        </Accordion>
-
-      </CardContent>
-    </Card>
-  )
-}
 
 export default function DashboardPage() {
   const hasPendingTransactions = pendingTransactions.length > 0;
@@ -170,7 +128,7 @@ export default function DashboardPage() {
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Transaksi Dibatalkan</CardTitle>
                 <Ban className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
+                </header>
                 <CardContent>
                 <div className="text-2xl font-bold">4</div>
                 <p className="text-xs text-muted-foreground">Tingkat pembatalan 7.7%</p>
@@ -179,18 +137,6 @@ export default function DashboardPage() {
         </div>
       </div>
       
-       <div>
-            <h2 className="text-2xl font-semibold flex items-center mb-4">
-              <Wallet className="mr-3 h-6 w-6 text-accent" />
-              Status Rekening Outlet
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {bankAccounts.map(account => (
-                    <BankAccountCard key={account.accountNumber} account={account} />
-                ))}
-            </div>
-      </div>
-
       <Separator />
 
       {hasPendingTransactions ? (

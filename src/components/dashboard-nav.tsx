@@ -4,14 +4,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, History, LogOut, QrCode, Settings } from "lucide-react";
-import { SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarFooter } from "@/components/ui/sidebar";
+import { SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarFooter, SidebarContent } from "@/components/ui/sidebar";
 import { Separator } from "./ui/separator";
+import { BankStatusSidebar } from "./bank-status-sidebar";
 
 // In a real app, you would get the user's role from the session
 const useUserRole = () => {
     // For demonstration, we'll assume the user is a 'Cashier'. 
     // Change to 'Owner' to see the Settings menu.
-    return 'Cashier'; 
+    return 'Owner'; 
 }
 
 export function DashboardNav() {
@@ -35,22 +36,29 @@ export function DashboardNav() {
         </Link>
       </SidebarHeader>
 
-      <SidebarMenu className="flex-1 p-2">
-        {availableMenuItems.map((item) => (
-          <SidebarMenuItem key={item.href}>
-            <SidebarMenuButton
-              asChild
-              isActive={pathname.startsWith(item.href)}
-              tooltip={{ children: item.label, side: "right", align: "center" }}
-            >
-              <Link href={item.href}>
-                <item.icon />
-                <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        ))}
-      </SidebarMenu>
+      <SidebarContent>
+        <SidebarMenu className="p-2">
+          {availableMenuItems.map((item) => (
+            <SidebarMenuItem key={item.href}>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname.startsWith(item.href)}
+                tooltip={{ children: item.label, side: "right", align: "center" }}
+              >
+                <Link href={item.href}>
+                  <item.icon />
+                  <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+
+        <Separator className="my-2" />
+
+        <BankStatusSidebar />
+        
+      </SidebarContent>
       
       <SidebarFooter className="p-2 mt-auto">
         <Separator className="my-2 group-data-[collapsible=icon]:hidden" />

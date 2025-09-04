@@ -132,6 +132,7 @@ export type BankAccountHistory = {
 };
 
 export type BankAccount = {
+  id: string;
   bankName: string;
   accountNumber: string;
   accountHolder: string;
@@ -142,6 +143,7 @@ export type BankAccount = {
 
 export const bankAccounts: BankAccount[] = [
   {
+    id: 'bca',
     bankName: 'Bank Central Asia',
     accountNumber: '123-456-7890',
     accountHolder: 'Outlet Pusat QR Tunai',
@@ -154,6 +156,7 @@ export const bankAccounts: BankAccount[] = [
     ]
   },
   {
+    id: 'mandiri',
     bankName: 'Bank Mandiri',
     accountNumber: '098-765-4321',
     accountHolder: 'Outlet Pusat QR Tunai',
@@ -166,6 +169,7 @@ export const bankAccounts: BankAccount[] = [
     ]
   },
   {
+    id: 'bri',
     bankName: 'Bank Rakyat Indonesia',
     accountNumber: '111-222-3334',
     accountHolder: 'Outlet Pusat QR Tunai',
@@ -178,6 +182,7 @@ export const bankAccounts: BankAccount[] = [
     ]
   },
   {
+    id: 'bsi',
     bankName: 'Bank Syariah Indonesia',
     accountNumber: '777-888-9990',
     accountHolder: 'Outlet Pusat QR Tunai',
@@ -190,6 +195,7 @@ export const bankAccounts: BankAccount[] = [
     ]
   },
   {
+    id: 'bni',
     bankName: 'Bank Negara Indonesia',
     accountNumber: '444-555-6667',
     accountHolder: 'Outlet Pusat QR Tunai',
@@ -202,6 +208,7 @@ export const bankAccounts: BankAccount[] = [
     ]
   },
   {
+    id: 'btn',
     bankName: 'Bank Tabungan Negara',
     accountNumber: '222-333-4445',
     accountHolder: 'Outlet Pusat QR Tunai',
