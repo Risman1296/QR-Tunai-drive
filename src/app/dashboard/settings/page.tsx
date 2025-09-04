@@ -19,12 +19,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { MoreHorizontal, PlusCircle } from "lucide-react"
+import { MoreHorizontal, PlusCircle, ShieldAlert } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const users = [
-    { id: "USR001", name: "Admin Utama", username: "admin", role: "Admin", status: "Active" },
+    { id: "USR001", name: "Owner Utama", username: "owner", role: "Owner", status: "Active" },
     { id: "USR002", name: "Kasir Pagi", username: "kasir01", role: "Cashier", status: "Active" },
     { id: "USR003", name: "Kasir Malam", username: "kasir02", role: "Cashier", status: "Inactive" },
 ]
@@ -45,6 +46,15 @@ export default function SettingsPage() {
           Kelola pengguna, tarif, dan konfigurasi outlet Anda.
         </p>
       </div>
+
+       <Alert variant="destructive" className="border-yellow-500/50 text-yellow-600 dark:border-yellow-500 [&>svg]:text-yellow-600">
+          <ShieldAlert className="h-4 w-4" />
+          <AlertTitle>Halaman Terbatas</AlertTitle>
+          <AlertDescription>
+            Hanya pengguna dengan peran "Owner" yang dapat melihat dan mengubah pengaturan ini.
+          </AlertDescription>
+        </Alert>
+
       <Tabs defaultValue="users" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="users">Pengguna</TabsTrigger>
@@ -84,7 +94,11 @@ export default function SettingsPage() {
                         <TableRow key={user.id}>
                         <TableCell className="font-medium">{user.name}</TableCell>
                         <TableCell>{user.username}</TableCell>
-                        <TableCell>{user.role}</TableCell>
+                        <TableCell>
+                            <Badge variant={user.role === "Owner" ? "default" : "secondary"} className={user.role === 'Owner' ? 'bg-accent text-accent-foreground' : ''}>
+                                {user.role}
+                            </Badge>
+                        </TableCell>
                         <TableCell>
                             <Badge variant={user.status === "Active" ? "default" : "secondary"} className={user.status === 'Active' ? 'bg-green-600' : ''}>
                                 {user.status}

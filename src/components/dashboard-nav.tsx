@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -6,14 +7,24 @@ import { LayoutDashboard, History, LogOut, QrCode, Settings } from "lucide-react
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarFooter } from "@/components/ui/sidebar";
 import { Separator } from "./ui/separator";
 
+// In a real app, you would get the user's role from the session
+const useUserRole = () => {
+    // For demonstration, we'll assume the user is a 'Cashier'. 
+    // Change to 'Owner' to see the Settings menu.
+    return 'Cashier'; 
+}
+
 export function DashboardNav() {
   const pathname = usePathname();
+  const userRole = useUserRole();
 
   const menuItems = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/dashboard/history", label: "Riwayat", icon: History },
-    { href: "/dashboard/settings", label: "Pengaturan", icon: Settings },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ['Owner', 'Cashier', 'Admin'] },
+    { href: "/dashboard/history", label: "Riwayat", icon: History, roles: ['Owner', 'Cashier', 'Admin'] },
+    { href: "/dashboard/settings", label: "Pengaturan", icon: Settings, roles: ['Owner'] },
   ];
+
+  const availableMenuItems = menuItems.filter(item => item.roles.includes(userRole));
 
   return (
     <div className="flex flex-col h-full">
@@ -25,7 +36,7 @@ export function DashboardNav() {
       </SidebarHeader>
 
       <SidebarMenu className="flex-1 p-2">
-        {menuItems.map((item) => (
+        {availableMenuItems.map((item) => (
           <SidebarMenuItem key={item.href}>
             <SidebarMenuButton
               asChild
