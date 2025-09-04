@@ -111,7 +111,7 @@ export default function SettingsPage() {
               <CardDescription>
                 Atur biaya administrasi untuk setiap jenis transaksi yang relevan.
               </CardDescription>
-            </Header>
+            </CardHeader>
             <CardContent className="space-y-4">
               <div className="rounded-md border">
                 <Table>
