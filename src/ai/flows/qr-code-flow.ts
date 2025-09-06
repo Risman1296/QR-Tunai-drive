@@ -54,7 +54,14 @@ const generateQrCodeFlow = ai.defineFlow(
   async ({baseUrl}) => {
     try {
       const uniqueRef = generateUniqueReference();
-      const transactionUrl = `${baseUrl}/transaction?ref=${uniqueRef}`;
+      // FIX: Use a reliable origin for the transaction URL.
+      // Instead of using the baseUrl from the browser, we construct the URL
+      // using a known, reliable origin. When a custom domain is set up,
+      // this should be replaced with the public domain name.
+      const origin = process.env.NODE_ENV === 'production' 
+        ? 'https://app.qr-drive.uk' // Replace with your actual domain in the future
+        : baseUrl;
+      const transactionUrl = `${origin}/transaction?ref=${uniqueRef}`;
       
       const qrCodeDataUrl = await QRCode.toDataURL(transactionUrl, {
         errorCorrectionLevel: 'H',

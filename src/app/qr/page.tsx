@@ -12,8 +12,8 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { generateQrCode, GenerateQrCodeOutput } from '@/ai/flows/qr-code-flow';
 import { useToast } from '@/hooks/use-toast';
+import { GenerateQrCodeOutput } from '@/ai/flows/qr-code-flow';
 
 const QR_ROTATION_TTL = 120; // in seconds
 
@@ -28,8 +28,20 @@ export default function QrPage() {
     setTimer(QR_ROTATION_TTL);
     try {
       const baseUrl = window.location.origin;
-      const response = await generateQrCode({ baseUrl });
-      setQrData(response);
+      const response = await fetch('/api/qr', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ baseUrl }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API call failed with status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      setQrData(result);
     } catch (error) {
       console.error('Error generating QR code:', error);
       setQrData(null);

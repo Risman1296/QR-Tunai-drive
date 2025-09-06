@@ -41,32 +41,32 @@ const features = [
 const howItWorks = [
   {
     icon: ScanLine,
-    title: '1. Pindai QR',
-    description: 'Saat berada di antrian, pindai QR code yang ditampilkan untuk membuka formulir transaksi.',
+    title: '1. Pindai QR di Loket',
+    description: 'Saat tiba di loket kasir, akan ada QR code unik yang ditampilkan untuk transaksi Anda.',
   },
   {
     icon: FileText,
-    title: '2. Isi Formulir',
-    description: 'Lengkapi detail transaksi Anda pada formulir digital yang aman.',
+    title: '2. Isi Detail Transaksi',
+    description: 'Pindai QR tersebut dengan ponsel Anda untuk membuka form, lalu isi nama dan nominal transaksi.',
   },
   {
     icon: Car,
-    title: '3. Transaksi di Loket',
-    description: 'Maju ke loket, di mana petugas kami sudah siap melayani transaksi Anda yang telah disiapkan.',
+    title: '3. Selesaikan Transaksi',
+    description: 'Kasir akan mengkonfirmasi data Anda di layar mereka dan menyelesaikan proses transaksi tunai.',
   },
 ];
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-background">
       <Header />
       <main className="flex-1">
+        {/* Hero Section */}
         <section className="relative h-[60vh] md:h-[70vh] flex items-center justify-center text-center text-white px-4">
           <div className="absolute inset-0">
             <Image
-              src="https://picsum.photos/1600/900"
-              alt="Drive thru banking"
-              data-ai-hint="drive thru bank"
+              src="https://images.unsplash.com/photo-1580921935312-d8a1b5a3f076?q=80&w=2070&auto=format&fit=crop"
+              alt="Modern bank drive-thru"
               fill
               className="object-cover"
               priority
@@ -75,55 +75,27 @@ export default function Home() {
           </div>
           <div className="relative z-10 max-w-3xl">
             <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
-              Transaksi Keuangan Generasi Berikutnya
+              Masa Depan Transaksi Drive-Thru
             </h1>
             <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto">
-              QR Tunai Drive: Cepat, Aman, dan Nyaman. Lakukan semua transaksi perbankan Anda tanpa meninggalkan kendaraan.
+              Memperkenalkan QR Tunai Drive: Solusi transaksi tunai berbasis QR yang cepat, aman, dan tanpa kontak untuk bisnis Anda.
             </p>
-            <Button size="lg" className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
-              <Link href="/transaction">Mulai Transaksi</Link>
-            </Button>
           </div>
         </section>
 
-        <section id="features" className="py-16 md:py-24 bg-background">
-          <div className="container">
-            <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold">Layanan Komprehensif Kami</h2>
-              <p className="mt-4 text-muted-foreground">
-                Dari penarikan tunai hingga pembayaran tagihan, kami menyediakan semua kebutuhan transaksi Anda dalam satu atap.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {features.map((feature, index) => (
-                <Card key={index} className="text-center shadow-lg hover:shadow-xl transition-shadow duration-300">
-                  <CardHeader>
-                    <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit">
-                      <feature.icon className="h-8 w-8 text-primary" />
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-muted-foreground">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
+        {/* How It Works Section */}
         <section id="how-it-works" className="py-16 md:py-24 bg-card">
           <div className="container">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <h2 className="text-3xl md:text-4xl font-bold">Bagaimana Cara Kerjanya?</h2>
               <p className="mt-4 text-muted-foreground">
-                Tiga langkah mudah untuk pengalaman perbankan drive-thru yang revolusioner.
+                Tiga langkah mudah untuk merevolusi pengalaman transaksi pelanggan Anda.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 text-center">
               {howItWorks.map((step) => (
-                <div key={step.title} className="flex flex-col items-center text-center">
-                  <div className="mb-4 bg-primary/10 p-6 rounded-full">
+                <div key={step.title} className="flex flex-col items-center">
+                  <div className="mb-6 bg-primary/10 p-6 rounded-full ring-8 ring-primary/5">
                     <step.icon className="h-12 w-12 text-primary" />
                   </div>
                   <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
@@ -131,45 +103,47 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-
-        <section id="location" className="py-16 md:py-24 bg-background">
-          <div className="container">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
-              <div>
-                <h2 className="text-3xl md:text-4xl font-bold">Kunjungi Outlet Kami</h2>
-                <div className="flex items-start mt-6">
-                  <MapPin className="h-6 w-6 text-primary mt-1 mr-4 shrink-0" />
-                  <div>
-                    <h3 className="text-xl font-semibold">QR Tunai Drive Thru - Pusat Kota</h3>
-                    <p className="text-muted-foreground mt-1">
-                      Jl. Jenderal Sudirman No. 123, Gerbang Masuk Kota, 12345
-                    </p>
-                  </div>
-                </div>
-                <p className="mt-4 text-muted-foreground">
-                  Buka 24 jam non-stop, kami selalu siap melayani Anda kapan pun. Temukan kami di jalan utama kota Anda.
-                </p>
-                <Button className="mt-6" variant="outline">Dapatkan Arah</Button>
-              </div>
-              <div className="rounded-lg overflow-hidden shadow-xl aspect-video">
-                <Image
-                  src="https://picsum.photos/600/400"
-                  alt="Map location"
-                  data-ai-hint="city map"
-                  width={600}
-                  height={400}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+             <div className="text-center mt-12">
+                <Button asChild>
+                    <Link href="/dashboard">
+                        Lihat Dasbor Aplikasi
+                    </Link>
+                </Button>
             </div>
           </div>
         </section>
+
+        {/* Features Section */}
+        <section id="features" className="py-16 md:py-24 bg-background">
+          <div className="container">
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold">Fitur Unggulan</h2>
+              <p className="mt-4 text-muted-foreground">
+                Platform kami dirancang untuk efisiensi, keamanan, dan kemudahan penggunaan, baik untuk kasir maupun pelanggan.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {features.map((feature, index) => (
+                <Card key={index} className="text-center shadow-lg hover:shadow-xl transition-shadow duration-300 border-border/60">
+                  <CardHeader>
+                    <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit">
+                      <feature.icon className="h-8 w-8 text-primary" />
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                    <p className="text-muted-foreground text-sm">{feature.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
       </main>
       <footer className="bg-card border-t">
         <div className="container py-6 text-center text-muted-foreground text-sm">
-          <p>&copy; {new Date().getFullYear()} QR Tunai Drive. Semua hak dilindungi. | <Link href="/terms" className="underline hover:text-primary">Syarat & Ketentuan</Link></p>
+          <p>&copy; {new Date().getFullYear()} QR Tunai Drive. Dibuat sebagai proyek demo. | <Link href="#" className="underline hover:text-primary">Syarat & Ketentuan</Link></p>
         </div>
       </footer>
     </div>

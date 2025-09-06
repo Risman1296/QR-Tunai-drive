@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, History, LogOut, QrCode, Settings } from "lucide-react";
+import { LayoutDashboard, History, LogOut, QrCode, Settings, ScanLine } from "lucide-react"; // Added ScanLine
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarFooter, SidebarContent } from "@/components/ui/sidebar";
 import { Separator } from "./ui/separator";
 import { BankStatusSidebar } from "./bank-status-sidebar";
@@ -21,6 +21,8 @@ export function DashboardNav() {
 
   const menuItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ['Owner', 'Cashier', 'Admin'] },
+    // Added the new QR page link here
+    { href: "/dashboard/qr", label: "Tampilkan QR", icon: ScanLine, roles: ['Owner', 'Cashier', 'Admin'] },
     { href: "/dashboard/history", label: "Riwayat", icon: History, roles: ['Owner', 'Cashier', 'Admin'] },
     { href: "/dashboard/settings", label: "Pengaturan", icon: Settings, roles: ['Owner'] },
   ];
@@ -42,7 +44,8 @@ export function DashboardNav() {
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
-                isActive={pathname.startsWith(item.href)}
+                // Exact match for dashboard, prefix match for others
+                isActive={item.href === '/dashboard' ? pathname === item.href : pathname.startsWith(item.href)}
                 tooltip={{ children: item.label, side: "right", align: "center" }}
               >
                 <Link href={item.href}>
