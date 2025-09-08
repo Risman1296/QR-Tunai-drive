@@ -1,0 +1,8 @@
+name: Firebase Hosting Deploy
+on:
+  workflow_dispatch: {}  # hanya manual; tidak auto dari push/PR
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Manual only."
