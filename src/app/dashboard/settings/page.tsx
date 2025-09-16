@@ -51,7 +51,7 @@ export default function SettingsPage() {
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle>Halaman Terbatas</AlertTitle>
           <AlertDescription>
-            Hanya pengguna dengan peran "Owner" yang dapat melihat dan mengubah pengaturan ini.
+            Hanya pengguna dengan peran &quot;Owner&quot; yang dapat melihat dan mengubah pengaturan ini.
           </AlertDescription>
         </Alert>
 
