@@ -1,7 +1,7 @@
+'use server'
+
 // In a real app, this file would contain server-side logic for form submissions and data mutations.
 // For this prototype, we'll include mock actions.
-
-'use server'
 
 import { redirect } from 'next/navigation'
 
@@ -11,7 +11,17 @@ import { redirect } from 'next/navigation'
  * @param _prevState - The previous state, not used here.
  * @param _formData - The form data, not used in this mock.
  */
-export async function loginAction(_prevState: any, _formData: FormData) {
+// Login action for Next.js form (single argument: FormData)
+
+export async function loginAction(formData: FormData): Promise<void> {
+  // Example: get username and password from form
+  const username = formData.get('username');
+  const password = formData.get('password');
+  // TODO: Implement your authentication logic here
+  // For now, just log to console (replace with real logic)
+  console.log('Login attempt:', { username, password });
+  // You can throw an error or redirect as needed
+
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 1000));
   

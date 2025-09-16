@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Transaksi - QRTunai</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <header class="bg-white shadow p-4 flex items-center gap-2">
+    <img src="/logo.png" alt="Logo" class="h-8">
+    <span class="font-bold text-lg text-blue-700">QRTunai Drive-Thru</span>
+  </header>
+  <main class="flex-1 flex flex-col items-center justify-center p-6">
+    <h2 class="text-xl font-semibold mb-2">Isi Data Transaksi</h2>
+    <form id="trx-form" class="bg-white rounded-lg shadow p-6 w-full max-w-md flex flex-col gap-4">
+      <select name="type" class="border rounded p-2" required>
+        <option value="">Pilih Jenis Transaksi</option>
+        <option value="tarik">Tarik Tunai</option>
+        <option value="setor">Setor Tunai</option>
+        <option value="transfer">Transfer</option>
+        <option value="pembayaran">Pembayaran</option>
+      </select>
+      <input type="number" name="amount" class="border rounded p-2" placeholder="Nominal" required min="10000">
+      <input type="text" name="customer_name" class="border rounded p-2" placeholder="Nama Nasabah" required>
+      <input type="text" name="phone" class="border rounded p-2" placeholder="No. HP (opsional)">
+      <textarea name="note" class="border rounded p-2" placeholder="Catatan (opsional)"></textarea>
+      <input type="file" name="evidence" class="border rounded p-2">
+      <button type="submit" class="bg-blue-600 text-white rounded p-2 font-semibold hover:bg-blue-700">Kirim</button>
+    </form>
+    <div id="form-status" class="mt-4 text-center text-sm"></div>
+  </main>
+  <footer class="bg-white text-center text-gray-400 text-sm p-4">&copy; 2025 QRTunai Drive-Thru</footer>
+  <script src="/js/form.js"></script>
+</body>
+</html>

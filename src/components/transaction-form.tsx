@@ -1,444 +1,608 @@
+"use client";
 
-"use client"
+const bankOptions = [
+	{ value: "Bank Central Asia", label: "Bank Central Asia (BCA)" },
+	{ value: "Bank Mandiri", label: "Bank Mandiri" },
+	{ value: "Bank Rakyat Indonesia", label: "Bank Rakyat Indonesia (BRI)" },
+	{ value: "Bank Syariah Indonesia", label: "Bank Syariah Indonesia (BSI)" },
+	{ value: "Bank Negara Indonesia", label: "Bank Negara Indonesia (BNI)" },
+	{ value: "Bank Tabungan Negara", label: "Bank Tabungan Negara (BTN)" },
+	{ value: "Citibank", label: "Citibank" },
+	{ value: "Permata", label: "Bank Permata" },
+	{ value: "Lainnya", label: "Bank Lainnya" },
+];
 
-import * as React from "react"
-import { useState, useEffect } from "react"
-import { useFormState, useFormStatus } from "react-dom"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { ArrowLeft, Loader2, Send } from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
-import { useSearchParams } from "next/navigation"
+import * as React from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from "@/components/ui/card";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { FormattedInput } from "@/components/ui/formatted-input";
+import { Notification } from "@/components/notification";
+import Link from "next/link";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
-import { submitTransactionAction } from "@/lib/actions"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { CopyButton } from "./copy-button"
-import { Suspense } from "react"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+// Fungsi untuk memformat angka dengan titik sebagai pemisah ribuan
+const formatRupiah = (amount: number): string => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount).replace('IDR', 'Rp');
+};
+
+const paymentTypes = [
+	{ value: "angsuran", label: "Bayar Angsuran" },
+	{ value: "pdam", label: "Bayar PDAM" },
+	{ value: "pln", label: "Bayar PLN" },
+	{ value: "telepon", label: "Bayar Telepon" },
+	{ value: "internet", label: "Bayar Internet" },
+	{ value: "bpjs_kesehatan", label: "Bayar BPJS Kesehatan" },
+	{ value: "bpjs_ketenagakerjaan", label: "Bayar BPJS Ketenagakerjaan" },
+	{ value: "kartu_kredit", label: "Bayar Kartu Kredit" },
+	{ value: "tv_kabel", label: "Bayar TV Kabel" },
+	{ value: "lainnya", label: "Lainnya" },
+];
+
+const transactionTypes = [
+	{ value: "Tarik Tunai", label: "Tarik Tunai" },
+	{ value: "Setor Tunai", label: "Setor Tunai" },
+	{ value: "Transfer", label: "Transfer" },
+	{ value: "Pembayaran", label: "Pembayaran" },
+	{ value: "Top Up E Wallet", label: "Top Up E Wallet" },
+];
+
+const tarikMethods = [
+	{ value: "transfer_outlet", label: "Transfer Outlet" },
+	{ value: "qris", label: "QRIS (Max. 1 Juta)" },
+	{ value: "edc", label: "ATM - Mesin EDC" },
+];
+
+const eWallets = [
+	{ value: "Gopay", label: "Gopay" },
+	{ value: "OVO", label: "OVO" },
+	{ value: "DANA", label: "DANA" },
+	{ value: "ShopeePay", label: "ShopeePay" },
+	{ value: "LinkAja", label: "LinkAja" },
+];
 
 const formSchema = z.object({
-  transactionType: z.enum(["Tarik Tunai", "Setor Tunai", "Transfer", "Pembayaran"]),
-  paymentMethod: z.enum(["Transfer", "QRIS", "EDC"]).optional(),
-  bankName: z.string().min(2, "Nama bank minimal 2 karakter."),
-  accountNumber: z.string().min(5, "Nomor rekening minimal 5 digit.").regex(/^\d+$/, "Nomor rekening hanya boleh berisi angka."),
-  accountHolderName: z.string().min(2, "Nama pemilik rekening minimal 2 karakter."),
-  amount: z.coerce.number().min(10000, "Jumlah minimal Rp 10.000."),
-  notes: z.string().max(100, "Catatan maksimal 100 karakter.").optional(),
-  verification: z.literal(true, {
-    errorMap: () => ({ message: "Anda harus menyetujui verifikasi ini." }),
-  }),
-  reference: z.string().min(1, "Nomor referensi tidak valid."),
-}).refine(data => !(data.transactionType === "Tarik Tunai" && !data.paymentMethod), {
-    message: "Silakan pilih metode pembayaran.",
-    path: ["paymentMethod"],
+	type: z.string().min(1, "Pilih jenis transaksi"),
+	bank: z.string().optional(),
+	accountNumber: z.string()
+		.optional()
+		.refine(val => !val || /^\d+$/.test(val), {
+			message: "Nomor rekening hanya boleh berisi angka"
+		}),
+	customerName: z.string().min(1, "Nama wajib diisi"),
+	amount: z.coerce.number().min(1000, "Minimal Rp1.000"),
+	notes: z.string().optional(),
+	ewallet: z.string().optional(),
+	phone: z.string().optional(),
+	verification: z.boolean().optional(),
 });
 
-type TransactionType = "Tarik Tunai" | "Setor Tunai" | "Transfer" | "Pembayaran" | ""
-type PaymentMethod = "Transfer" | "QRIS" | "EDC" | ""
+/**
+ * Represents the shape of form values as inferred from the `formSchema` Zod schema.
+ * 
+ * This type is automatically generated based on the structure and validation rules
+ * defined in `formSchema`, ensuring type safety and consistency throughout the form.
+ */
 type FormValues = z.infer<typeof formSchema>;
 
+export default function TransactionForm() {
+	const form = useForm<FormValues>({
+		resolver: zodResolver(formSchema),
+		defaultValues: {
+			type: "",
+			amount: 0,
+			verification: false,
+		},
+	});
 
-function SubmitButton() {
-  const { pending } = useFormStatus()
-  return (
-    <Button type="submit" className="w-full" disabled={pending}>
-      {pending ? (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-      ) : (
-        <Send className="mr-2 h-4 w-4" />
-      )}
-      Kirim Formulir
-    </Button>
-  )
-}
+	// Generate simple unique transaction ID (for demo, use timestamp)
+	const transactionId = React.useMemo(() => {
+		return 'TXN-' + Date.now().toString(36).toUpperCase();
+	}, []);
 
-function TransactionFormContent() {
-  const searchParams = useSearchParams()
-  const transactionRef = searchParams.get('ref')
+	const watchType = form.watch("type");
+	const [tarikMethod, setTarikMethod] = useState("");
+	const [paymentType, setPaymentType] = useState("");
+	const [manualPaymentType, setManualPaymentType] = useState("");
 
-  const [formState, action] = useFormState(submitTransactionAction, { message: "", success: false })
-  const [selectedTransaction, setSelectedTransaction] = useState<TransactionType>("")
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>("");
-  
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      bankName: "",
-      accountNumber: "",
-      accountHolderName: "",
-      amount: 0,
-      notes: "",
-      reference: transactionRef || "",
-    },
-  })
-  
-  const quickAmounts = [100000, 200000, 500000, 1000000];
+	// Field visibility logic
+	const isEWallet = watchType === "Top Up E Wallet";
+	const isTransfer = watchType === "Transfer";
+	const isTarik = watchType === "Tarik Tunai";
+	const isSetor = watchType === "Setor Tunai";
+	const isPembayaran = watchType === "Pembayaran";
 
-  useEffect(() => {
-    if (transactionRef) {
-      form.setValue('reference', transactionRef)
-      const savedData = sessionStorage.getItem(`transaction-${transactionRef}`);
-      if (savedData) {
-        const parsedData = JSON.parse(savedData);
-        form.reset(parsedData);
-        if(parsedData.transactionType) {
-            setSelectedTransaction(parsedData.transactionType)
-        }
-        if(parsedData.paymentMethod) {
-            setSelectedPaymentMethod(parsedData.paymentMethod)
-        }
-      }
-    }
-  }, [transactionRef, form])
+	// State untuk mengelola status submit
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [submitStatus, setSubmitStatus] = useState<{
+		type: 'success' | 'error' | null;
+		message: string;
+	}>({ type: null, message: '' });
 
-  useEffect(() => {
-    const subscription = form.watch((value) => {
-        if(transactionRef) {
-            sessionStorage.setItem(`transaction-${transactionRef}`, JSON.stringify(value));
-        }
-    });
-    return () => subscription.unsubscribe();
-  }, [form, transactionRef]);
-  
-  if (!transactionRef) {
-    return (
-        <Card className="w-full max-w-md">
-            <CardHeader>
-                <CardTitle>Link Tidak Valid</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <Alert variant="destructive">
-                    <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>
-                        Nomor referensi transaksi tidak ditemukan. Silakan pindai QR code yang valid.
-                    </AlertDescription>
-                </Alert>
-            </CardContent>
-            <CardFooter>
-                 <Button variant="outline" className="w-full" asChild>
-                    <Link href="/">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Kembali ke Beranda
-                    </Link>
-                </Button>
-            </CardFooter>
-        </Card>
-    )
-  }
+	async function onSubmit(values: FormValues) {
+		// Reset status
+		setSubmitStatus({ type: null, message: '' });
+		setIsSubmitting(true);
+		
+		try {
+			const res = await fetch("/api/transactions", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(values),
+			});
+			
+			if (!res.ok) {
+				const err = await res.json().catch(() => ({}));
+				setSubmitStatus({ 
+					type: 'error', 
+					message: "Gagal menyimpan transaksi: " + (err?.error || res.statusText) 
+				});
+				return;
+			}
+			
+			const data = await res.json();
+			setSubmitStatus({ 
+				type: 'success', 
+				message: `Transaksi berhasil disimpan dengan ID: ${data.id}`
+			});
+			form.reset();
+		} catch (e) {
+			setSubmitStatus({ 
+				type: 'error', 
+				message: "Terjadi kesalahan server. Silakan coba lagi."
+			});
+		} finally {
+			setIsSubmitting(false);
+		}
+	}
 
-  if (formState.success) {
-    if (transactionRef) {
-        sessionStorage.removeItem(`transaction-${transactionRef}`);
-    }
-    return (
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Transaksi Terkirim</CardTitle>
-          <CardDescription>Formulir Anda telah berhasil dikirim.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Alert variant="default" className="bg-green-100 border-green-400 text-green-700">
-            <AlertTitle>Berhasil!</AlertTitle>
-            <AlertDescription>{formState.message}</AlertDescription>
-          </Alert>
-          <div className="mt-4 rounded-md border bg-muted p-3 text-sm">
-            <p className="text-muted-foreground">Nomor Antrian Anda:</p>
-            <p className="font-mono font-semibold text-primary">{transactionRef}</p>
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button variant="outline" className="w-full" asChild>
-            <Link href="/">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Kembali ke Beranda
-            </Link>
-          </Button>
-        </CardFooter>
-      </Card>
-    )
-  }
+	return (
+		<>
+			{/* Notification component */}
+			<Notification 
+				type={submitStatus.type} 
+				message={submitStatus.message} 
+				onClose={() => setSubmitStatus({ type: null, message: '' })}
+			/>
+			
+			<Card className="max-w-md mx-auto mt-6 shadow-xl border-0 bg-white/70 backdrop-blur-lg rounded-xl">
+				<CardHeader className="pb-2 bg-white/60 backdrop-blur rounded-t-xl border-b border-gray-100 shadow-sm">
+					<div className="flex flex-col items-center gap-2">
+						<div className="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-blue-300 shadow-md mb-2 border border-blue-200">
+							<img src="/logo.png" alt="Logo QR Tunai" className="h-10 w-10 object-contain" />
+						</div>
+						<CardTitle className="text-2xl font-extrabold text-center tracking-tight text-gray-800 font-sans">Form Transaksi</CardTitle>
+						<span className="inline-block text-xs font-mono bg-white/70 border border-gray-200 rounded px-2 py-1 text-gray-700 mt-1 shadow-sm">ID Transaksi: {transactionId}</span>
+											<span className="inline-block text-xs font-semibold text-blue-700 bg-blue-50 rounded px-2 py-1 mt-1 shadow">Layanan: QR Tunai Outlet</span>
+										</div>
+										<CardDescription className="text-center text-xs mt-3 text-gray-500 font-medium">Pilih jenis transaksi dan isi data sesuai kebutuhan</CardDescription>
+									</CardHeader>
+			<CardContent>
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 
-  return (
-    <Card className="w-full max-w-md">
-      <Form {...form}>
-        <form action={action}>
-          <input type="hidden" {...form.register("reference")} />
-          <CardHeader>
-            <CardTitle>Formulir Transaksi</CardTitle>
-            <CardDescription>
-              Isi detail transaksi Anda. Pastikan semua data benar.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2 rounded-md border bg-muted p-3">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <Label>Nomor Antrian Anda</Label>
-                        <p className="font-mono text-primary font-bold">{transactionRef}</p>
-                    </div>
-                    <CopyButton textToCopy={transactionRef} label="Salin" />
-                </div>
-            </div>
+															{/* Jenis Transaksi: Popdown Select */}
+															<FormField
+																control={form.control}
+																name="type"
+																render={({ field }) => (
+																	<FormItem>
+																		<FormLabel className="text-base font-semibold">Jenis Transaksi</FormLabel>
+																		<Select onValueChange={field.onChange} value={field.value}>
+																			<FormControl>
+																				<SelectTrigger className="h-14 text-lg font-bold" >
+																					<SelectValue placeholder="Pilih jenis transaksi" />
+																				</SelectTrigger>
+																			</FormControl>
+																			<SelectContent>
+																				{transactionTypes.map((t) => (
+																					<SelectItem key={t.value} value={t.value} className="text-base font-semibold">{t.label}</SelectItem>
+																				))}
+																			</SelectContent>
+																		</Select>
+																		<FormMessage />
+																	</FormItem>
+																)}
+															/>
 
-            <FormField
-              control={form.control}
-              name="transactionType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Jenis Transaksi</FormLabel>
-                  <Select
-                    onValueChange={(value: TransactionType) => {
-                      field.onChange(value)
-                      setSelectedTransaction(value)
-                      if (value !== 'Tarik Tunai') {
-                        setSelectedPaymentMethod('');
-                        form.setValue('paymentMethod', undefined);
-                      }
-                    }}
-                    defaultValue={field.value}
-                    name={field.name}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih jenis transaksi" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Tarik Tunai">Tarik Tunai</SelectItem>
-                      <SelectItem value="Setor Tunai">Setor Tunai</SelectItem>
-                      <SelectItem value="Transfer">Transfer</SelectItem>
-                      <SelectItem value="Pembayaran">Pembayaran</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+						{/* E Wallet Fields */}
+						{isEWallet && (
+							<div className="space-y-2 animate-fade-in">
+								<Badge variant="secondary" className="mb-1">Top Up E Wallet</Badge>
+								<FormField
+									control={form.control}
+									name="ewallet"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Nama E Wallet</FormLabel>
+											<Select onValueChange={field.onChange} value={field.value}>
+												<FormControl>
+													<SelectTrigger>
+														<SelectValue placeholder="Pilih e-wallet" />
+													</SelectTrigger>
+												</FormControl>
+												<SelectContent>
+													{eWallets.map((ew) => (
+														<SelectItem key={ew.value} value={ew.value}>{ew.label}</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="phone"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>No. HP E Wallet</FormLabel>
+											<FormControl>
+												<Input type="tel" placeholder="08xxxxxxxxxx" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="amount"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Nominal</FormLabel>
+											<FormControl>
+												<Input type="number" min={1000} step={1000} placeholder="Masukkan nominal" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="verification"
+									render={({ field }) => (
+										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-2 bg-muted/30">
+											<FormLabel className="mb-0">Verifikasi nomor & saldo</FormLabel>
+											<FormControl>
+												<Switch checked={field.value} onCheckedChange={field.onChange} />
+											</FormControl>
+										</FormItem>
+									)}
+								/>
+							</div>
+						)}
 
-            {selectedTransaction === "Tarik Tunai" && (
-                <FormField
-                control={form.control}
-                name="paymentMethod"
-                render={({ field }) => (
-                  <FormItem className="space-y-3 rounded-md border border-accent p-4">
-                    <FormLabel className="font-semibold">Pilih Metode Pembayaran</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={(value: PaymentMethod) => {
-                            field.onChange(value)
-                            setSelectedPaymentMethod(value)
-                        }}
-                        defaultValue={field.value}
-                        className="flex flex-col space-y-2"
-                      >
-                        <FormItem className="flex items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="Transfer" />
-                          </FormControl>
-                          <FormLabel className="font-normal">Transfer Bank</FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="QRIS" />
-                          </FormControl>
-                          <FormLabel className="font-normal">QRIS</FormLabel>
-                        </FormItem>
-                         <FormItem className="flex items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="EDC" />
-                          </FormControl>
-                          <FormLabel className="font-normal">Kartu Debit/Kredit (EDC)</FormLabel>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
+						{/* Transfer Fields */}
+						{isTransfer && (
+							<div className="space-y-2 animate-fade-in">
+								<Badge variant="secondary" className="mb-1">Transfer Bank</Badge>
+								<FormField
+									control={form.control}
+									name="bank"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Bank Tujuan</FormLabel>
+											<FormControl>
+												<Input placeholder="Nama bank" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="accountNumber"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>No. Rekening Tujuan</FormLabel>
+											<FormControl>
+												<Input 
+													type="text" 
+													pattern="[0-9]*" 
+													inputMode="numeric"
+													placeholder="Nomor rekening" 
+													{...field}
+													onChange={(e) => {
+														// Filter non-numeric characters
+														const value = e.target.value.replace(/\D/g, '');
+														field.onChange(value);
+													}}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="customerName"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Nama Penerima</FormLabel>
+											<FormControl>
+												<Input placeholder="Nama penerima" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="amount"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Nominal</FormLabel>
+											<FormControl>
+												<Input type="number" min={1000} step={1000} placeholder="Masukkan nominal" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+						)}
 
-                    {selectedPaymentMethod === 'Transfer' && (
-                        <div className="space-y-2 pt-2">
-                            <Label className="text-sm">Rekening Tujuan Transfer</Label>
-                            <div className="flex items-center gap-2">
-                                <Input readOnly value="123-456-7890 (Bank QR Tunai)" className="bg-muted flex-1 text-sm"/>
-                                <CopyButton textToCopy="1234567890" />
-                            </div>
-                            <p className="text-xs text-muted-foreground">Silakan transfer jumlah yang Anda inginkan ke rekening di atas terlebih dahulu.</p>
-                        </div>
-                    )}
-                     {selectedPaymentMethod === 'QRIS' && (
-                        <div className="space-y-2 pt-2">
-                            <Label className="text-sm">Pindai untuk Membayar</Label>
-                            <div className="flex justify-center p-2 bg-white rounded-md">
-                                <Image src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=example" data-ai-hint="QR code" alt="QRIS Code" width={150} height={150} />
-                            </div>
-                            <p className="text-xs text-muted-foreground text-center">Pindai kode QRIS ini dengan aplikasi e-wallet atau mobile banking Anda.</p>
-                        </div>
-                    )}
-                    {selectedPaymentMethod === 'EDC' && (
-                         <div className="space-y-2 pt-2">
-                             <Alert>
-                                <AlertTitle>Siapkan Kartu Anda</AlertTitle>
-                                <AlertDescription>
-                                    Transaksi akan diproses menggunakan mesin EDC di loket. Mohon siapkan kartu Debit atau Kredit Anda.
-                                </AlertDescription>
-                            </Alert>
-                         </div>
-                    )}
-                  </FormItem>
-                )}
-              />
-            )}
-            
-            <FormField
-              control={form.control}
-              name="bankName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nama Bank Anda</FormLabel>
-                  <FormControl>
-                    <Input placeholder="cth: Bank Central Asia" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="accountNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>No. Rekening Anda</FormLabel>
-                  <FormControl>
-                    <Input type="tel" placeholder="cth: 0123456789" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="accountHolderName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nama Pemilik Rekening</FormLabel>
-                  <FormControl>
-                    <Input placeholder="cth: Budi Setiawan" {...field} />
-                  </FormControl>
-                   <FormDescription>
-                    Nama harus sesuai dengan yang tertera di rekening bank.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Jumlah Transaksi</FormLabel>
-                   <div className="space-y-2">
-                    <FormControl>
-                      <div className="relative">
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">Rp</span>
-                        <Input type="number" placeholder="cth: 500000" className="pl-9" {...field} />
-                      </div>
-                    </FormControl>
-                    <div className="grid grid-cols-4 gap-2">
-                      {quickAmounts.map(amount => (
-                          <Button key={amount} type="button" variant="outline" size="sm" onClick={() => form.setValue('amount', amount, { shouldValidate: true })}>
-                            {new Intl.NumberFormat('id-ID').format(amount / 1000)}k
-                          </Button>
-                      ))}
-                    </div>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+									{/* Tarik Tunai Fields */}
+												{isTarik && (
+													<div className="space-y-2 animate-fade-in">
+														<Badge variant="secondary" className="mb-1">Tarik Tunai</Badge>
+														<div>
+															<FormLabel>Metode Tarik Tunai</FormLabel>
+															<div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+																{tarikMethods.map((m) => (
+																	<button
+																		key={m.value}
+																		type="button"
+																		className={`w-full rounded-lg border-2 px-4 py-3 text-base font-semibold transition-all shadow-sm
+																			${tarikMethod === m.value
+																				? "border-blue-600 bg-blue-50 text-blue-800"
+																				: "border-gray-300 bg-white text-gray-700 hover:border-blue-400"}
+																		`}
+																		onClick={() => setTarikMethod(m.value)}
+																	>
+																		{m.label}
+																	</button>
+																))}
+															</div>
+														</div>
+																		{tarikMethod === "transfer_outlet" && (
+																			<div className="space-y-2 p-3 bg-gray-100 rounded-md text-center">
+																				<p className="font-semibold text-lg">Transfer ke rekening outlet QR Tunai.</p>
+																				<p className="text-xs text-gray-500">Silakan transfer ke rekening outlet sesuai instruksi petugas.</p>
+																			</div>
+																		)}
+																		{tarikMethod === "qris" && (
+																			<div className="space-y-2 p-3 bg-gray-100 rounded-md text-center">
+																				<p className="font-semibold text-lg">Pindai kode QRIS berikut (maksimal Rp1.000.000).</p>
+																				<div className="flex justify-center">
+																					<div className="w-full max-w-[180px] h-[180px] bg-gray-300 flex items-center justify-center rounded-lg">
+																						<p className="text-gray-500 text-sm">[QRIS]</p>
+																					</div>
+																				</div>
+																				<p className="text-xs text-gray-500">QRIS berlaku untuk satu kali transaksi, maksimal Rp1.000.000.</p>
+																			</div>
+																		)}
+																		{tarikMethod === "edc" && (
+																			<div className="space-y-2 p-3 bg-gray-100 rounded-md text-center">
+																				<p className="font-semibold text-lg">Lanjutkan di loket dengan ATM/EDC.</p>
+																				<p className="text-xs text-gray-500">Silakan berikan kartu ATM Anda kepada petugas untuk diproses di mesin EDC.</p>
+																			</div>
+																		)}
+														<FormField
+															control={form.control}
+															name="customerName"
+															render={({ field }) => (
+																<FormItem>
+																	<FormLabel>Nama Nasabah</FormLabel>
+																	<FormControl>
+																		<Input placeholder="Nama nasabah" {...field} />
+																	</FormControl>
+																	<FormMessage />
+																</FormItem>
+															)}
+														/>
+														<FormField
+															control={form.control}
+															name="amount"
+															render={({ field }) => (
+																<FormItem>
+																	<FormLabel>Nominal</FormLabel>
+																	<FormControl>
+																		<FormattedInput 
+																			type="number" 
+																			min={1000} 
+																			step={1000} 
+																			placeholder="Masukkan nominal" 
+																			{...field}
+																			formatValue={formatRupiah}
+																		/>
+																	</FormControl>
+																	<FormMessage />
+																</FormItem>
+															)}
+														/>
+													</div>
+												)}
 
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Catatan (Opsional)</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="cth: Pembayaran tagihan listrik" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+						{/* Setor Tunai Fields */}
+						{isSetor && (
+							<div className="space-y-2 animate-fade-in">
+								<Badge variant="secondary" className="mb-1">Setor Tunai</Badge>
+												<FormField
+													control={form.control}
+													name="bank"
+													render={({ field }) => (
+														<FormItem>
+															<FormLabel>Bank</FormLabel>
+															<Select onValueChange={field.onChange} value={field.value}>
+																<FormControl>
+																	<SelectTrigger>
+																		<SelectValue placeholder="Pilih bank" />
+																	</SelectTrigger>
+																</FormControl>
+																<SelectContent>
+																	{bankOptions.map((b) => (
+																		<SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>
+																	))}
+																</SelectContent>
+															</Select>
+															<FormMessage />
+														</FormItem>
+													)}
+												/>
+								<FormField
+									control={form.control}
+									name="accountNumber"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>No. Rekening</FormLabel>
+											<FormControl>
+												<Input 
+													type="text" 
+													pattern="[0-9]*" 
+													inputMode="numeric"
+													placeholder="Nomor rekening" 
+													{...field}
+													onChange={(e) => {
+														// Filter non-numeric characters
+														const value = e.target.value.replace(/\D/g, '');
+														field.onChange(value);
+													}}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="customerName"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Nama Penyetor</FormLabel>
+											<FormControl>
+												<Input placeholder="Nama penyetor" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="amount"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Nominal</FormLabel>
+											<FormControl>
+												<Input type="number" min={1000} step={1000} placeholder="Masukkan nominal" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+						)}
 
-            <FormField
-              control={form.control}
-              name="verification"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      name={field.name}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Verifikasi</FormLabel>
-                    <FormDescription>
-                      Saya menyatakan semua informasi yang dimasukkan valid. Saya telah membaca dan menyetujui <Link href="/terms" className="underline hover:text-primary" target="_blank">Syarat & Ketentuan</Link> yang berlaku.
-                    </FormDescription>
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
-          </CardContent>
-          <CardFooter>
-            <SubmitButton />
-          </CardFooter>
-        </form>
-      </Form>
-    </Card>
-  )
-}
 
-export function TransactionForm() {
-    return (
-        <Suspense fallback={<div className="w-full max-w-md text-center"><p>Memuat formulir...</p></div>}>
-            <TransactionFormContent />
-        </Suspense>
-    )
-}
+									{/* Pembayaran Fields */}
+									{isPembayaran && (
+										<div className="space-y-2 animate-fade-in">
+											<Badge variant="secondary" className="mb-1">Pembayaran</Badge>
+											<div>
+												<FormLabel>Jenis Pembayaran</FormLabel>
+												<Select value={paymentType} onValueChange={setPaymentType}>
+													<SelectTrigger>
+														<SelectValue placeholder="Pilih jenis pembayaran" />
+													</SelectTrigger>
+													<SelectContent>
+														{paymentTypes.map((pt) => (
+															<SelectItem key={pt.value} value={pt.value}>{pt.label}</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+											</div>
+											{paymentType === "lainnya" && (
+												<div>
+													<FormLabel>Jenis Pembayaran Lainnya</FormLabel>
+													<Input value={manualPaymentType} onChange={e => setManualPaymentType(e.target.value)} placeholder="Contoh: Sewa Apartemen" />
+												</div>
+											)}
+											<div>
+												<FormLabel>ID Pelanggan / Nomor Pembayaran</FormLabel>
+												<Input placeholder="Contoh: 1234567890" />
+											</div>
+											<FormField
+												control={form.control}
+												name="amount"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>Nominal</FormLabel>
+														<FormControl>
+															<FormattedInput 
+																type="number" 
+																min={1000} 
+																step={1000} 
+																placeholder="Masukkan nominal" 
+																{...field}
+																formatValue={formatRupiah}
+															/>
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+										</div>
+									)}
+
+									{/* Checkbox Validasi dan Syarat & Ketentuan */}
+									<FormField
+										control={form.control}
+										name="verification"
+										rules={{ required: true }}
+										render={({ field }) => (
+											<FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+												<FormControl>
+													<input
+														type="checkbox"
+														checked={!!field.value}
+														onChange={e => field.onChange(e.target.checked)}
+														className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+													/>
+												</FormControl>
+												<div className="space-y-1 leading-none">
+													<FormLabel>Saya menyatakan semua informasi yang dimasukkan valid.</FormLabel>
+													<div className="text-xs text-gray-500">
+														Saya telah membaca dan menyetujui
+														<Link href="/terms" target="_blank" className="underline hover:text-primary ml-1">Syarat & Ketentuan</Link>
+														yang berlaku.
+													</div>
+													<FormMessage />
+												</div>
+											</FormItem>
+										)}
+									/>
+									{/* Submit Button */}
+									<CardFooter className="p-0 pt-2 flex justify-end">
+										<Button type="submit" className="w-full">Simpan Transaksi</Button>
+									</CardFooter>
+					</form>
+				</Form>
+			</CardContent>
+		</Card>
+	);
+{"}"}

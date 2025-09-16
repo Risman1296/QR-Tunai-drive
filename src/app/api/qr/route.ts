@@ -1,25 +1,47 @@
-import { generateQrCode } from '@/ai/flows/qr-code-flow';
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
+import QRCode from 'qrcode';
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { baseUrl } = await req.json();
-    if (!baseUrl) {
-      return NextResponse.json(
-        { error: 'baseUrl is required' },
-        { status: 400 }
-      );
-    }
-
-    const result = await generateQrCode({ baseUrl });
-
-    return NextResponse.json(result);
+    // Generate unique token for QR
+    const tokenId = crypto.randomUUID();
+    const timestamp = Date.now();
+    const ttlSeconds = 120; // 2 minutes
+    const expiresAt = timestamp + (ttlSeconds * 1000);
+    
+    // Create HMAC token
+    const secret = process.env.JWT_SECRET || 'default-secret-change-me';
+    const hmac = crypto.createHmac('sha256', secret);
+    hmac.update(`${tokenId}:${expiresAt}`);
+    const signature = hmac.digest('hex');
+    
+    const token = `${tokenId}:${expiresAt}:${signature}`;
+    const transactionUrl = `/t/${tokenId}/form`;
+    const fullUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}${transactionUrl}`;
+    
+    // Generate QR code
+    const qrCodeDataUrl = await QRCode.toDataURL(fullUrl, {
+      width: 256,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      }
+    });
+    
+    return NextResponse.json({
+      id: tokenId,
+      token,
+      transactionUrl,
+      qrCodeDataUrl,
+      expiresIn: ttlSeconds,
+      expiresAt
+    });
   } catch (error) {
-    console.error('Error in QR code generation API route:', error);
-    const errorMessage =
-      error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('QR generation error:', error);
     return NextResponse.json(
-      { error: 'Failed to generate QR code', details: errorMessage },
+      { error: 'Failed to generate QR code' },
       { status: 500 }
     );
   }

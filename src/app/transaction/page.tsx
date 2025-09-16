@@ -3,7 +3,7 @@
 
 import { Suspense } from 'react';
 import Link from "next/link"
-import { TransactionForm } from "@/components/transaction-form"
+import TransactionForm from "@/components/transaction-form"
 import { QrCode } from "lucide-react"
 
 function TransactionPageContents() {

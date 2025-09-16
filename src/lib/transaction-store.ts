@@ -59,6 +59,16 @@ addDummyTransaction({
   notes: 'Scan QR untuk membayar'
 });
 
+// Dummy transaction for testing form akses manual
+transactions.set('DUMMY123', {
+  id: 'DUMMY123',
+  type: 'Pembayaran Digital',
+  customerName: '',
+  amount: 0,
+  status: 'pending',
+  date: new Date(),
+  notes: 'Transaksi dummy untuk testing akses form',
+});
 
 // --- Core Functions ---
 

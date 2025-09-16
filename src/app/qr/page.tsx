@@ -1,175 +1,138 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import {
-  QrCode,
-  ArrowLeft,
-  Copy,
-  Expand,
-  Loader2,
-  RefreshCw,
-} from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { GenerateQrCodeOutput } from '@/ai/flows/qr-code-flow';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const QR_ROTATION_TTL = 120; // in seconds
+interface QRCodeData {
+  qrCode: string;
+  token: string;
+  expiresAt: number;
+}
 
-export default function QrPage() {
-  const [qrData, setQrData] = useState<GenerateQrCodeOutput | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [timer, setTimer] = useState(QR_ROTATION_TTL);
-  const { toast } = useToast();
+export default function QRPage() {
+  const [qrData, setQrData] = useState<QRCodeData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [timeRemaining, setTimeRemaining] = useState(0);
 
-  const fetchQrCode = useCallback(async () => {
-    setIsLoading(true);
-    setTimer(QR_ROTATION_TTL);
+  // Generate QR code automatically when page loads
+  useEffect(() => {
+    generateQR();
+  }, []);
+
+  const generateQR = async () => {
+    setLoading(true);
+    setError('');
+    
     try {
-      const baseUrl = window.location.origin;
       const response = await fetch('/api/qr', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ baseUrl }),
+        body: JSON.stringify({
+          amount: 50000,
+          description: 'Drive-Thru Payment'
+        })
       });
 
       if (!response.ok) {
-        throw new Error(`API call failed with status: ${response.status}`);
+        throw new Error('Failed to generate QR code');
       }
 
-      const result = await response.json();
-      setQrData(result);
+      const data = await response.json();
+      setQrData(data);
+      setTimeRemaining(300); // 5 minutes
     } catch (error) {
-      console.error('Error generating QR code:', error);
-      setQrData(null);
-      toast({
-        variant: 'destructive',
-        title: 'Gagal Membuat QR Code',
-        description: 'Terjadi kesalahan saat mencoba membuat QR code baru.',
-      });
+      console.error('Error generating QR:', error);
+      setError('Failed to generate QR code. Please try again.');
     } finally {
-      setIsLoading(false);
-    }
-  }, [toast]);
-
-  useEffect(() => {
-    fetchQrCode();
-  }, [fetchQrCode]);
-
-  useEffect(() => {
-    if (isLoading) return;
-    const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          fetchQrCode();
-          return QR_ROTATION_TTL;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isLoading, fetchQrCode]);
-
-  const handleCopy = () => {
-    if (qrData?.transactionUrl) {
-      navigator.clipboard
-        .writeText(qrData.transactionUrl)
-        .then(() => {
-          toast({
-            title: 'Disalin!',
-            description: 'Link transaksi telah disalin ke clipboard.',
-          });
-        })
-        .catch((err) => {
-          console.error('Failed to copy: ', err);
-          toast({
-            variant: 'destructive',
-            title: 'Gagal menyalin',
-            description: 'Gagal menyalin link ke clipboard.',
-          });
-        });
-    }
-  };
-  
-  const handleFullScreen = () => {
-    if (document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen();
+      setLoading(false);
     }
   };
 
+  // Countdown timer
+  useEffect(() => {
+    if (timeRemaining > 0) {
+      const timer = setTimeout(() => setTimeRemaining(timeRemaining - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (timeRemaining === 0 && qrData) {
+      // Auto-refresh QR when expired
+      generateQR();
+    }
+  }, [timeRemaining, qrData]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    return mins.toString();
+  };
 
   return (
-    <div className="flex h-screen w-screen flex-col items-center justify-center bg-background text-foreground p-4">
-      <div className="absolute top-4 left-4">
-        <Button variant="ghost" asChild>
-          <Link href="/">
-            <ArrowLeft className="mr-2" />
-            Kembali
-          </Link>
-        </Button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
+      <div className="max-w-md mx-auto w-full">
+        <Card className="shadow-lg">
+          <CardHeader className="text-center border-b pb-4">
+            <div className="flex justify-center mb-3">
+              <img 
+                src="/logo.png" 
+                alt="QR Tunai Logo" 
+                className="h-16 w-16" 
+              />
+            </div>
+            <CardTitle className="text-2xl font-bold text-gray-800">
+              QR Tunai Drive-Thru
+            </CardTitle>
+            <p className="text-gray-600 mt-1">Scan QR dengan kamera HP</p>
+          </CardHeader>
 
-      <div className="text-center mb-8 max-w-xl">
-        <QrCode className="mx-auto h-16 w-16 text-primary mb-4" />
-        <h1 className="text-4xl md:text-5xl font-bold">Pindai Untuk Memulai</h1>
-        <p className="text-lg text-muted-foreground mt-3">
-          Arahkan kamera ke QR code di bawah ini. Kode ini unik dan hanya untuk
-          satu kali transaksi.
-        </p>
-      </div>
+          <CardContent className="space-y-4 py-8">
+            <div className="flex justify-center">
+              {loading ? (
+                <div className="w-72 h-72 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                  <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
+                </div>
+              ) : qrData ? (
+                <div className="text-center space-y-4">
+                  <div className="p-6 bg-white border-2 border-blue-200 rounded-lg shadow-sm">
+                    <img 
+                      src={qrData.qrCode} 
+                      alt="QR Code" 
+                      className="w-full h-auto max-w-72 mx-auto"
+                    />
+                  </div>
+                  <div className="text-sm font-medium text-gray-700 bg-blue-50 py-2 px-4 rounded-full inline-block">
+                    <span className="font-mono text-blue-700">{formatTime(timeRemaining)}</span> menit
+                  </div>
+                </div>
+              ) : (
+                <div className="w-72 h-72 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                  <span className="text-gray-500">QR Code sedang dibuat...</span>
+                </div>
+              )}
+            </div>
 
-      <div className="relative bg-white p-6 rounded-2xl shadow-2xl ring-4 ring-offset-4 ring-primary ring-offset-background">
-        {isLoading || !qrData ? (
-          <div className="w-64 h-64 md:w-80 md:h-80 flex flex-col items-center justify-center bg-gray-100 rounded-lg">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-            <p className="mt-4 text-sm text-muted-foreground">
-              Membuat QR Code...
-            </p>
-          </div>
-        ) : (
-          <Link
-            href={qrData.transactionUrl}
-            aria-label="Mulai Transaksi"
-            target="_blank"
-          >
-            <Image
-              src={qrData.qrCodeDataUrl}
-              alt="Dynamic QR Code for transaction"
-              width={320}
-              height={320}
-              className="rounded-lg"
-              priority
-            />
-          </Link>
-        )}
-      </div>
+            {error && (
+              <div className="text-center text-red-600 text-sm bg-red-50 p-3 rounded-lg">
+                {error}
+                <Button 
+                  onClick={generateQR} 
+                  variant="link"
+                  size="sm"
+                  className="text-blue-600 ml-2"
+                >
+                  Coba Lagi
+                </Button>
+              </div>
+            )}
 
-      <div className="mt-8 text-sm text-muted-foreground text-center max-w-md">
-        <p className="font-mono break-all p-2 bg-muted rounded-md">{qrData?.transactionUrl || 'Memuat link...'}</p>
-        <p className="mt-4">
-          QR code akan diperbarui dalam{' '}
-          <span className="font-bold text-primary">{timer}</span> detik.
-          <br />
-          Jika kamera gagal memindai, salin link di atas.
-        </p>
-      </div>
-      
-      <div className="mt-6 flex items-center gap-4">
-        <Button variant="outline" onClick={fetchQrCode} disabled={isLoading}>
-          <RefreshCw className={isLoading ? 'animate-spin' : ''} />
-          Ganti Kode
-        </Button>
-        <Button variant="outline" onClick={handleCopy} disabled={!qrData}>
-          <Copy />
-          Salin Link
-        </Button>
-        <Button variant="outline" onClick={handleFullScreen}>
-          <Expand />
-          Layar Penuh
-        </Button>
+            <div className="text-center text-sm text-gray-700 space-y-1 pt-4 border-t border-gray-100">
+              <p>QR ini digunakan untuk transaksi Drive-Thru</p>
+              <p>Scan menggunakan kamera HP di loket</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
