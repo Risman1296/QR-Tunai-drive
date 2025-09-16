@@ -604,5 +604,6 @@ export default function TransactionForm() {
 				</Form>
 			</CardContent>
 		</Card>
+		</>
 	);
-{"}"}
+}
