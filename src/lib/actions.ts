@@ -38,7 +38,7 @@ export async function loginAction(formData: FormData): Promise<void> {
  * @param _prevState - The previous state, not used here.
  * @param _formData - The form data containing transaction details.
  */
-export async function submitTransactionAction(_prevState: any, _formData: FormData) {
+export async function submitTransactionAction(_prevState: unknown, _formData: FormData) {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 1000));
   

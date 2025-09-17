@@ -121,8 +121,12 @@ const stats = [
   { number: '15 Detik', label: 'Rata-rata Waktu Transaksi' },
 ];
 
+<<<<<<< HEAD
 // Component to handle search params
 function TransactionStatus({ onTransactionCompleted }: { onTransactionCompleted: (id: string) => void }) {
+=======
+function HomePageContent() {
+>>>>>>> 9ce9d968594197bc5c16e6c13217b7cf31b67dfc
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -490,5 +494,13 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomePageContent />
+    </Suspense>
   );
 }

@@ -1045,6 +1045,7 @@ export default function TransactionForm() {
 											</FormItem>
 										)}
 									/>
+<<<<<<< HEAD
 									
 									{/* Enhanced Submit Button */}
 									<div className="pt-6">
@@ -1080,3 +1081,16 @@ export default function TransactionForm() {
 				</>
 			);
 		}
+=======
+									{/* Submit Button */}
+									<CardFooter className="p-0 pt-2 flex justify-end">
+										<Button type="submit" className="w-full">Simpan Transaksi</Button>
+									</CardFooter>
+					</form>
+				</Form>
+			</CardContent>
+		</Card>
+		</>
+	);
+}
+>>>>>>> 9ce9d968594197bc5c16e6c13217b7cf31b67dfc

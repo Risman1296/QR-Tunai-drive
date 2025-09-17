@@ -53,9 +53,10 @@ export default function GenerateQRPage() {
       });
       setQrCodeUrl(qrDataUrl);
 
-    } catch (err: any) {
-      setError(err.message);
-      toast({ variant: 'destructive', title: 'Error', description: err.message });
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(errorMessage);
+      toast({ variant: 'destructive', title: 'Error', description: errorMessage });
     } finally {
       setIsLoading(false);
     }

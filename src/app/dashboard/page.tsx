@@ -1,7 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+<<<<<<< HEAD
 import { Bell, CheckCircle, XCircle, TrendingUp, ReceiptText, Ban, User, Info, Loader2 } from 'lucide-react';
+=======
+import { Bell, CheckCircle, XCircle, TrendingUp, DollarSign, Ban, User, Info, Loader2 } from 'lucide-react';
+>>>>>>> 9ce9d968594197bc5c16e6c13217b7cf31b67dfc
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -65,7 +69,7 @@ function TransactionCard({ transaction, onUpdate }: { transaction: Transaction, 
         title: `Transaksi ${status === 'completed' ? 'Selesai' : 'Dibatalkan'}`,
         description: `Transaksi ${transaction.id} telah ditandai sebagai ${status === 'completed' ? 'selesai' : 'dibatalkan'}.`
       });
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Gagal Memperbarui Transaksi',
@@ -189,9 +193,10 @@ export default function DashboardPage() {
       setTransactions(transData.sort((a: Transaction, b: Transaction) => new Date(b.date).getTime() - new Date(a.date).getTime()));
       setSummary(summaryData);
 
-    } catch (err: any) {
-      setError(err.message);
-      toast({ variant: 'destructive', title: 'Error', description: err.message });
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(errorMessage);
+      toast({ variant: 'destructive', title: 'Error', description: errorMessage });
     } finally {
       setIsLoading(false);
     }

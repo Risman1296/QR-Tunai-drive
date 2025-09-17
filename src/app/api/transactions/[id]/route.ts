@@ -41,7 +41,7 @@ export async function PUT(
       );
     }
 
-    let updateData: { status?: TransactionStatus; customerName?: string; amount?: number } = {};
+    const updateData: { status?: TransactionStatus; customerName?: string; amount?: number } = {};
 
     if (isStatusUpdate) {
         // Update from Cashier Dashboard (e.g., completing or cancelling)
