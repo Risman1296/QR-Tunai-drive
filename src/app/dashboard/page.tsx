@@ -1,11 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-<<<<<<< HEAD
 import { Bell, CheckCircle, XCircle, TrendingUp, ReceiptText, Ban, User, Info, Loader2 } from 'lucide-react';
-=======
-import { Bell, CheckCircle, XCircle, TrendingUp, DollarSign, Ban, User, Info, Loader2 } from 'lucide-react';
->>>>>>> 9ce9d968594197bc5c16e6c13217b7cf31b67dfc
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';

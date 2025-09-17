@@ -204,7 +204,6 @@ export default function SettingsPage() {
           </p>
         </div>
 
-<<<<<<< HEAD
         <Alert variant="destructive" className="border-yellow-500/50 text-yellow-600 dark:border-yellow-500 [&>svg]:text-yellow-600">
             <ShieldAlert className="h-4 w-4" />
             <AlertTitle>Halaman Terbatas</AlertTitle>
@@ -212,15 +211,6 @@ export default function SettingsPage() {
               Hanya pengguna dengan peran "Owner" yang dapat melihat dan mengubah pengaturan ini.
             </AlertDescription>
           </Alert>
-=======
-       <Alert variant="destructive" className="border-yellow-500/50 text-yellow-600 dark:border-yellow-500 [&>svg]:text-yellow-600">
-          <ShieldAlert className="h-4 w-4" />
-          <AlertTitle>Halaman Terbatas</AlertTitle>
-          <AlertDescription>
-            Hanya pengguna dengan peran &quot;Owner&quot; yang dapat melihat dan mengubah pengaturan ini.
-          </AlertDescription>
-        </Alert>
->>>>>>> 9ce9d968594197bc5c16e6c13217b7cf31b67dfc
 
         <Tabs defaultValue="security" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
