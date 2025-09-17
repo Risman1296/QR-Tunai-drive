@@ -18,7 +18,26 @@ export async function POST(request: NextRequest) {
     
     const token = `${tokenId}:${expiresAt}:${signature}`;
     const transactionUrl = `/t/${tokenId}/form`;
-    const fullUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}${transactionUrl}`;
+    
+    // Dynamically construct base URL from request headers to ensure same port
+    const host = request.headers.get('host') || 'localhost:3001';
+    const protocol = request.headers.get('x-forwarded-proto') || 'http';
+    
+    // Check if request comes from localhost/127.0.0.1, then use network IP for mobile access
+    let baseHost = host;
+    if (host.includes('localhost') || host.includes('127.0.0.1')) {
+      // Extract port from host
+      const port = host.split(':')[1] || '3001';
+      // Use environment variable or default network IP
+      const networkIp = process.env.NETWORK_IP || '0.0.0.0';
+      if (networkIp !== '0.0.0.0') {
+        baseHost = `${networkIp}:${port}`;
+      }
+    }
+    
+    const fullUrl = `${protocol}://${baseHost}${transactionUrl}`;
+    
+    console.log('Generated QR URL:', fullUrl); // Debug log
     
     // Generate QR code
     const qrCodeDataUrl = await QRCode.toDataURL(fullUrl, {
@@ -30,11 +49,12 @@ export async function POST(request: NextRequest) {
       }
     });
     
+    // Ensure consistent naming with client expectations
     return NextResponse.json({
       id: tokenId,
       token,
       transactionUrl,
-      qrCodeDataUrl,
+      qrCodeDataUrl, // This is what we return for the QR code
       expiresIn: ttlSeconds,
       expiresAt
     });

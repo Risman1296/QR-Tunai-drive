@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Bell, CheckCircle, XCircle, TrendingUp, DollarSign, ReceiptText, Ban, User, Info, Loader2 } from 'lucide-react';
+import { Bell, CheckCircle, XCircle, TrendingUp, ReceiptText, Ban, User, Info, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { CopyButton } from '@/components/copy-button';
 import { useToast } from '@/hooks/use-toast';
 import { Transaction } from '@/lib/transaction-store';
+import ShiftStatusWidget from '@/components/shift-status-widget';
 
 // --- Utility Functions ---
 function formatCurrency(amount: number) {
@@ -94,6 +95,34 @@ function TransactionCard({ transaction, onUpdate }: { transaction: Transaction, 
                 <span className="font-medium">{transaction.customerName}</span>
             </div>
         </div>
+        
+        {/* Display method for detailed transaction info */}
+        {transaction.method && (
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Metode</span>
+            <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-blue-600">
+                  {transaction.method === 'transfer_outlet' ? 'Transfer Outlet' :
+                   transaction.method === 'edc_atm' ? 'ATM/EDC' :
+                   transaction.method === 'tunai' ? 'Tunai' :
+                   transaction.method === 'atm' ? 'ATM' :
+                   transaction.method === 'qris' ? 'QRIS' : 
+                   transaction.method}
+                </span>
+            </div>
+          </div>
+        )}
+        
+        {/* Display outlet bank for transfer outlet */}
+        {transaction.method === 'transfer_outlet' && transaction.outletBank && (
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Bank Outlet</span>
+            <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-green-600">{transaction.outletBank}</span>
+            </div>
+          </div>
+        )}
+        
         {transaction.bank && transaction.accountNumber && (
           <div className="flex justify-between items-center">
             <span className="text-sm text-muted-foreground">{transaction.bank}</span>
@@ -141,6 +170,7 @@ export default function DashboardPage() {
 
   const fetchData = useCallback(async () => {
     try {
+      console.log('Fetching dashboard data...');
       const [transRes, summaryRes] = await Promise.all([
         fetch('/api/transactions', { cache: 'no-store' }),
         fetch('/api/transactions/summary', { cache: 'no-store' })
@@ -153,6 +183,9 @@ export default function DashboardPage() {
       const transData = await transRes.json();
       const summaryData = await summaryRes.json();
       
+      console.log('Received transactions:', transData.length, 'items');
+      console.log('Summary data:', summaryData);
+      
       setTransactions(transData.sort((a: Transaction, b: Transaction) => new Date(b.date).getTime() - new Date(a.date).getTime()));
       setSummary(summaryData);
 
@@ -163,6 +196,33 @@ export default function DashboardPage() {
       setIsLoading(false);
     }
   }, [toast]);
+
+  // Function to clear all transactions
+  const handleClearTransactions = async () => {
+    if (confirm('Yakin ingin menghapus semua data transaksi?')) {
+      try {
+        const response = await fetch('/api/transactions/clear', {
+          method: 'POST'
+        });
+        if (response.ok) {
+          fetchData(); // Refresh data
+          toast({
+            title: 'Berhasil',
+            description: 'Semua data transaksi telah dihapus.'
+          });
+        } else {
+          throw new Error('Failed to clear transactions');
+        }
+      } catch (error) {
+        console.error('Error clearing transactions:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Gagal menghapus data transaksi.'
+        });
+      }
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -214,6 +274,9 @@ export default function DashboardPage() {
         <p className="text-muted-foreground">Data transaksi real-time. Diperbarui setiap 5 detik.</p>
       </div>
 
+      {/* Shift Status Widget */}
+      <ShiftStatusWidget />
+
        <div className="space-y-4">
           <h2 className="text-2xl font-semibold flex items-center">
               <TrendingUp className="mr-3 h-6 w-6 text-accent" />
@@ -221,10 +284,10 @@ export default function DashboardPage() {
           </h2>
            {summary && (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <SummaryCard title="Total Pendapatan" value={formatCurrency(summary.totalRevenue)} icon={DollarSign} description="Hanya dari transaksi selesai" />
+              <SummaryCard title="Total Transaksi" value={formatCurrency(summary.totalRevenue)} icon={ReceiptText} description="Hanya dari transaksi selesai" />
               <SummaryCard title="Transaksi Selesai" value={summary.completedTransactions} icon={CheckCircle} description={`Total: ${summary.totalTransactions} transaksi`} />
               <SummaryCard title="Menunggu Konfirmasi" value={summary.pendingTransactions} icon={Bell} />
-              <SummaryCard title="Transaksi Dibatalkan" value={summary.cancelledTransactions} icon={Ban} description={`Tingkat sukses: ${summary.completionRate.toFixed(1)}%`} />
+              <SummaryCard title="Transaksi Dibatalkan" value={summary.cancelledTransactions} icon={Ban} description={`Tingkat sukses: ${summary.completionRate !== null ? summary.completionRate.toFixed(1) : '0.0'}%`} />
             </div>
            )}
       </div>
@@ -232,13 +295,23 @@ export default function DashboardPage() {
       <Separator />
 
       <div>
-          <h2 className="text-2xl font-semibold flex items-center mb-4">
-            {pendingTransactions.length > 0 ? 
-                <Bell className="mr-3 h-6 w-6 text-accent animate-pulse" /> 
-                : <Info className="mr-3 h-6 w-6 text-muted-foreground" />
-            }
-            Transaksi Tertunda ({pendingTransactions.length})
-          </h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-semibold flex items-center">
+              {pendingTransactions.length > 0 ? 
+                  <Bell className="mr-3 h-6 w-6 text-accent animate-pulse" /> 
+                  : <Info className="mr-3 h-6 w-6 text-muted-foreground" />
+              }
+              Transaksi Tertunda ({pendingTransactions.length})
+            </h2>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleClearTransactions}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              Hapus Semua
+            </Button>
+          </div>
           {pendingTransactions.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {pendingTransactions.map(tx => (

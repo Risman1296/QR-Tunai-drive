@@ -7,8 +7,13 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
 import { Button } from '@/components/ui/button';
-import { Loader2, Search, XCircle, CheckCircle, Clock, Ban } from 'lucide-react';
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
+import { Loader2, Search, XCircle, CheckCircle, Clock, Ban, CalendarIcon, Filter } from 'lucide-react';
 import { Transaction, TransactionStatus } from '@/lib/transaction-store';
+import { format, startOfDay, endOfDay, subDays, startOfWeek, startOfMonth, endOfWeek, endOfMonth } from 'date-fns';
+import { id } from 'date-fns/locale';
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('id-ID', {
@@ -64,6 +69,51 @@ export default function HistoryPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<TransactionStatus[]>(['completed', 'cancelled', 'pending']);
+  
+  // Date filtering state
+  const [dateFilterMode, setDateFilterMode] = useState<'all' | 'today' | 'week' | 'month' | 'custom'>('all');
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
+  // Date filtering functions
+  const applyDateFilter = (mode: 'all' | 'today' | 'week' | 'month' | 'custom') => {
+    setDateFilterMode(mode);
+    const now = new Date();
+    
+    switch (mode) {
+      case 'today':
+        setStartDate(startOfDay(now));
+        setEndDate(endOfDay(now));
+        break;
+      case 'week':
+        setStartDate(startOfWeek(now, { weekStartsOn: 1 }));
+        setEndDate(endOfWeek(now, { weekStartsOn: 1 }));
+        break;
+      case 'month':
+        setStartDate(startOfMonth(now));
+        setEndDate(endOfMonth(now));
+        break;
+      case 'all':
+        setStartDate(undefined);
+        setEndDate(undefined);
+        break;
+      case 'custom':
+        // For custom, we keep existing dates or reset them
+        if (!startDate || !endDate) {
+          setStartDate(subDays(now, 7));
+          setEndDate(now);
+        }
+        break;
+    }
+  };
+
+  const isTransactionInDateRange = (transaction: Transaction) => {
+    if (!startDate || !endDate || dateFilterMode === 'all') return true;
+    
+    const txDate = new Date(transaction.date);
+    return txDate >= startDate && txDate <= endDate;
+  };
 
   const fetchTransactions = useCallback(async () => {
     setIsLoading(true);
@@ -89,13 +139,14 @@ export default function HistoryPage() {
   const filteredTransactions = useMemo(() => {
     return transactions
       .filter(tx => statusFilter.includes(tx.status))
+      .filter(tx => isTransactionInDateRange(tx))
       .filter(tx => 
         tx.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         tx.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (tx.accountNumber && tx.accountNumber.includes(searchTerm)) ||
         tx.amount.toString().includes(searchTerm)
       );
-  }, [transactions, searchTerm, statusFilter]);
+  }, [transactions, searchTerm, statusFilter, startDate, endDate, dateFilterMode]);
 
   return (
     <div className="space-y-6">
@@ -106,36 +157,158 @@ export default function HistoryPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="relative w-full md:max-w-sm">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input 
-                    placeholder="Cari ID, nama, no. rek, atau jumlah..."
-                    className="pl-8 w-full"
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                />
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full md:w-auto">Filter Status</Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                {(['completed', 'pending', 'cancelled'] as TransactionStatus[]).map(status => (
-                  <DropdownMenuCheckboxItem
-                    key={status}
-                    checked={statusFilter.includes(status)}
-                    onCheckedChange={checked => {
-                      setStatusFilter(prev => 
-                        checked ? [...prev, status] : prev.filter(s => s !== status)
-                      )
+          <div className="space-y-4">
+            {/* Date Filter Buttons */}
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: 'all', label: 'Semua Waktu' },
+                { key: 'today', label: 'Hari Ini' },
+                { key: 'week', label: '7 Hari' },
+                { key: 'month', label: '30 Hari' }
+              ].map(({ key, label }) => (
+                <Button
+                  key={key}
+                  variant={dateFilterMode === key ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => applyDateFilter(key as any)}
+                >
+                  {label}
+                </Button>
+              ))}
+              
+              {/* Custom Date Range Picker */}
+              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant={dateFilterMode === 'custom' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => {
+                      if (dateFilterMode !== 'custom') {
+                        applyDateFilter('custom');
+                      }
+                      setCalendarOpen(true);
                     }}
                   >
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    <CalendarIcon className="mr-1 h-4 w-4" />
+                    Pilih Tanggal
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-4" align="start">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Pilih Rentang Tanggal</Label>
+                      <div className="flex flex-col space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Label className="w-16">Dari:</Label>
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start text-left font-normal"
+                            onClick={() => setDateFilterMode('custom')}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {startDate ? format(startDate, "dd/MM/yyyy", { locale: id }) : "Pilih tanggal"}
+                          </Button>
+                        </div>
+                        <Calendar
+                          mode="single"
+                          selected={startDate}
+                          onSelect={(date) => {
+                            setStartDate(date);
+                            setDateFilterMode('custom');
+                          }}
+                          locale={id}
+                          initialFocus
+                        />
+                      </div>
+                      
+                      <div className="flex flex-col space-y-2 mt-4">
+                        <div className="flex items-center space-x-2">
+                          <Label className="w-16">Sampai:</Label>
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start text-left font-normal"
+                            onClick={() => setDateFilterMode('custom')}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {endDate ? format(endDate, "dd/MM/yyyy", { locale: id }) : "Pilih tanggal"}
+                          </Button>
+                        </div>
+                        <Calendar
+                          mode="single"
+                          selected={endDate}
+                          onSelect={(date) => {
+                            setEndDate(date);
+                            setDateFilterMode('custom');
+                          }}
+                          locale={id}
+                          disabled={(date) => startDate ? date < startDate : false}
+                        />
+                      </div>
+                    </div>
+                    <Button 
+                      onClick={() => setCalendarOpen(false)} 
+                      className="w-full"
+                      size="sm"
+                    >
+                      Terapkan
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+            
+            {/* Display active date range */}
+            {(startDate && endDate && dateFilterMode !== 'all') && (
+              <div className="text-sm text-muted-foreground bg-muted/30 px-3 py-2 rounded-md border">
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  <span>
+                    Menampilkan transaksi dari {format(startDate, "dd MMM yyyy", { locale: id })} 
+                    {" "}hingga {format(endDate, "dd MMM yyyy", { locale: id })}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => applyDateFilter('all')}
+                    className="ml-auto h-auto p-1 text-muted-foreground hover:text-foreground"
+                  >
+                    <XCircle className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="relative w-full md:max-w-sm">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                      placeholder="Cari ID, nama, no. rek, atau jumlah..."
+                      className="pl-8 w-full"
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
+                  />
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-full md:w-auto">Filter Status</Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  {(['completed', 'pending', 'cancelled'] as TransactionStatus[]).map(status => (
+                    <DropdownMenuCheckboxItem
+                      key={status}
+                      checked={statusFilter.includes(status)}
+                      onCheckedChange={checked => {
+                        setStatusFilter(prev => 
+                          checked ? [...prev, status] : prev.filter(s => s !== status)
+                        )
+                      }}
+                    >
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

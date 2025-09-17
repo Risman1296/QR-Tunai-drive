@@ -5,7 +5,6 @@
     ],
     "chat.tools.terminal.autoApprove": {
         "/^git (status|show\\b.*)$/": true,
-        "rm": false
         "/.*/": true,
         "cd": true,
         "echo": true,
@@ -104,5 +103,26 @@
         "eval": false,
         "Invoke-Expression": false,
         "iex": false
+    },
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "qrtunai-backend/": true
+    },
+    "typescript.validate.enable": true,
+    "javascript.validate.enable": true,
+    "problems.exclude": {
+        "**/node_modules/**": true,
+        "**/qrtunai-backend/**": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/*.code-search": true,
+        "qrtunai-backend/": true
     }
 }

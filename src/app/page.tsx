@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -121,20 +121,94 @@ const stats = [
   { number: '15 Detik', label: 'Rata-rata Waktu Transaksi' },
 ];
 
-export default function HomePage() {
+// Component to handle search params
+function TransactionStatus({ onTransactionCompleted }: { onTransactionCompleted: (id: string) => void }) {
   const searchParams = useSearchParams();
-  const initialTab = searchParams.get('tab') || 'overview';
-  const [activeTab, setActiveTab] = useState(initialTab);
 
-  // Jika query berubah (misal user buka link /?tab=services), update tab
   useEffect(() => {
-    const tab = searchParams.get('tab');
-    if (tab && tab !== activeTab) setActiveTab(tab);
-  }, [searchParams, activeTab]);
+    const transaction = searchParams.get('transaction');
+    const status = searchParams.get('status');
+    
+    if (transaction && status === 'completed') {
+      onTransactionCompleted(transaction);
+    }
+  }, [searchParams, onTransactionCompleted]);
+
+  return null;
+}
+
+export default function HomePage() {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [transactionCompleted, setTransactionCompleted] = useState(false);
+  const [transactionId, setTransactionId] = useState('');
+
+  const handleTransactionCompleted = (id: string) => {
+    setTransactionCompleted(true);
+    setTransactionId(id);
+    
+    // Auto hide after 10 seconds
+    setTimeout(() => {
+      setTransactionCompleted(false);
+    }, 10000);
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
+      <Suspense fallback={null}>
+        <TransactionStatus onTransactionCompleted={handleTransactionCompleted} />
+      </Suspense>
+      
       <Header />
+      
+      {/* Transaction Service Simulation */}
+      {transactionCompleted && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md mx-auto bg-white shadow-xl">
+            <CardHeader className="text-center pb-4">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <CardTitle className="text-xl text-green-800">Transaksi Berhasil Diproses!</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center space-y-4">
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600">ID Transaksi:</p>
+                <p className="font-mono text-lg font-semibold text-blue-600 bg-blue-50 py-2 px-4 rounded">
+                  {transactionId}
+                </p>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span>Status:</span>
+                  <span className="text-green-600 font-semibold">✓ Sedang Diproses</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span>Estimasi Selesai:</span>
+                  <span className="text-blue-600 font-semibold">2-5 menit</span>
+                </div>
+              </div>
+              
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <Car className="w-4 h-4 inline mr-2" />
+                  Silakan menuju counter drive-thru untuk penyelesaian transaksi
+                </p>
+              </div>
+              
+              <Button 
+                onClick={() => setTransactionCompleted(false)}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                Tutup
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
       
       <main className="flex-1">
@@ -142,7 +216,7 @@ export default function HomePage() {
         {activeTab === 'overview' && (
           <section className="relative min-h-screen flex items-center justify-center text-center text-white px-4 overflow-hidden">
             <div className="absolute inset-0">
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-gray-800/95 z-10" />
+              <div className="absolute inset-0 bg-gradient-to-br from-qr-blue-900/95 via-qr-blue-800/90 to-qr-blue-950/95 z-10" />
               <Image
                 src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=2070&auto=format&fit=crop"
                 alt="QR Tunai Drive-Thru modern banking"
@@ -155,21 +229,22 @@ export default function HomePage() {
             <div className="relative z-20 max-w-5xl mx-auto">
               <div className="mb-8">
                 <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6">
-                  QRTunai Drive Thru
+                  <span className="text-qr-yellow-400">QR</span> TUNAI DRIVE
                 </h1>
-                <div className="text-xl md:text-2xl font-medium text-blue-100 mb-4">
-                  Layanan utama dari platform QRTunai
+                <div className="text-xl md:text-2xl font-medium text-qr-yellow-100 mb-4">
+                  Solusi Drive-Thru Banking Terdepan di Indonesia
                 </div>
               </div>
               
               <p className="text-lg md:text-xl max-w-4xl mx-auto mb-12 leading-relaxed text-gray-100">
-                QRTunai adalah platform fintech inovatif yang menghadirkan berbagai layanan transaksi keuangan modern. Salah satu layanan utamanya adalah <b>QRTunai Drive Thru</b>, solusi transaksi perbankan drive-thru berbasis QR code yang aman, cepat, dan mudah digunakan.
+                Platform fintech inovatif yang menghadirkan pengalaman transaksi perbankan drive-thru 
+                dengan teknologi QR code yang aman, cepat, dan mudah digunakan
               </p>
               
               <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
                 <Button 
                   size="lg" 
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-10 py-4 text-lg shadow-lg"
+                  className="bg-qr-yellow-500 hover:bg-qr-yellow-600 text-qr-blue-900 font-semibold px-10 py-4 text-lg shadow-lg"
                   onClick={() => setActiveTab('services')}
                 >
                   Pelajari Selengkapnya
@@ -177,7 +252,7 @@ export default function HomePage() {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="border-2 border-white text-white hover:bg-white/10 font-semibold px-10 py-4 text-lg"
+                  className="border-2 border-qr-yellow-400 text-qr-yellow-400 hover:bg-qr-yellow-400/10 font-semibold px-10 py-4 text-lg"
                   onClick={() => setActiveTab('partnership')}
                 >
                   Hubungi Kami
@@ -186,8 +261,8 @@ export default function HomePage() {
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
                 {stats.map((stat, index) => (
-                  <div key={index} className="text-center bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                    <div className="text-2xl md:text-3xl font-bold text-blue-200 mb-2">{stat.number}</div>
+                  <div key={index} className="text-center bg-qr-yellow-500/10 backdrop-blur-sm rounded-xl p-6 border border-qr-yellow-400/20">
+                    <div className="text-2xl md:text-3xl font-bold text-qr-yellow-400 mb-2">{stat.number}</div>
                     <div className="text-sm md:text-base font-medium text-gray-200">{stat.label}</div>
                   </div>
                 ))}
@@ -202,10 +277,10 @@ export default function HomePage() {
             <div className="container">
               <div className="text-center max-w-3xl mx-auto mb-16">
                 <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
-                  Layanan QRTunai Drive Thru
+                  Layanan Kami
                 </h2>
                 <p className="text-xl text-gray-600">
-                  Layanan utama QRTunai untuk kebutuhan transaksi perbankan drive-thru modern
+                  Solusi lengkap untuk kebutuhan transaksi perbankan drive-thru modern
                 </p>
               </div>
               
@@ -238,10 +313,11 @@ export default function HomePage() {
             <div className="container">
               <div className="text-center max-w-4xl mx-auto mb-16">
                 <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
-                  Peluang Kemitraan QRTunai
+                  Peluang Kemitraan Bisnis
                 </h2>
                 <p className="text-xl md:text-2xl leading-relaxed text-gray-600">
-                  Bergabunglah menjadi mitra platform QRTunai dan kembangkan bisnis fintech Anda bersama layanan QRTunai Drive Thru serta dukungan teknologi dan sistem operasional yang telah terbukti.
+                  Bergabunglah dengan jaringan mitra QR Tunai Drive dan kembangkan bisnis fintech 
+                  dengan dukungan teknologi dan sistem operasional yang telah terbukti
                 </p>
               </div>
               
@@ -279,10 +355,10 @@ export default function HomePage() {
             <div className="container">
               <div className="text-center max-w-3xl mx-auto mb-16">
                 <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
-                  Cara Kerja QRTunai Drive Thru
+                  Cara Kerja Sistem
                 </h2>
                 <p className="text-xl text-gray-600">
-                  Proses transaksi sederhana dan efisien dengan layanan utama QRTunai
+                  Proses transaksi yang sederhana dan efisien untuk pengalaman drive-thru terbaik
                 </p>
               </div>
               
@@ -314,10 +390,10 @@ export default function HomePage() {
             <div className="container">
               <div className="text-center max-w-3xl mx-auto mb-16">
                 <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
-                  Mengapa Memilih QRTunai Drive Thru?
+                  Mengapa Memilih QR Tunai Drive?
                 </h2>
                 <p className="text-xl text-gray-600">
-                  Keunggulan layanan utama dari platform QRTunai untuk solusi drive-thru banking
+                  Keunggulan yang menjadikan kami pilihan terdepan untuk solusi drive-thru banking
                 </p>
               </div>
               
@@ -365,10 +441,11 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div className="col-span-1 md:col-span-2">
               <h3 className="text-2xl font-bold mb-4 text-white">
-                QRTunai Drive Thru
+                QR TUNAI DRIVE
               </h3>
               <p className="text-gray-300 leading-relaxed mb-4">
-                Layanan utama dari platform QRTunai: solusi drive-thru banking terdepan di Indonesia dengan teknologi QR code yang aman dan efisien. Melayani ribuan transaksi setiap hari dengan standar keamanan tingkat perbankan.
+                Solusi drive-thru banking terdepan di Indonesia dengan teknologi QR code yang aman dan efisien. 
+                Melayani ribuan transaksi setiap hari dengan standar keamanan tingkat perbankan.
               </p>
               <div className="text-sm text-gray-400">
                 📍 Kantor Pusat: Jakarta, Indonesia<br/>
@@ -400,8 +477,8 @@ export default function HomePage() {
           
           <div className="border-t border-gray-700 pt-8 text-center">
             <p className="text-gray-400">
-              &copy; {new Date().getFullYear()} <span className="font-semibold text-white">QRTunai Drive Thru</span> - 
-              Layanan utama platform QRTunai. All rights reserved. | 
+              &copy; {new Date().getFullYear()} <span className="font-semibold text-white">QR Tunai Drive</span> - 
+              Solusi Drive-Thru Banking Indonesia. All rights reserved. | 
               <Link href="/terms" className="underline hover:text-blue-400 transition-colors ml-2">
                 Syarat & Ketentuan
               </Link>

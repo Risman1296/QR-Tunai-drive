@@ -6,6 +6,16 @@ import { ThemeProvider } from '@/components/theme-provider';
 export const metadata: Metadata = {
   title: 'QR Tunai Drive',
   description: 'Transaksi keuangan cepat, aman, dan nyaman melalui drive-thru.',
+  icons: {
+    icon: '/favicon.svg',
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: 'cover',
+  },
 };
 
 export default function RootLayout({
@@ -23,7 +33,7 @@ export default function RootLayout({
       <body className="font-sans antialiased h-full">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >

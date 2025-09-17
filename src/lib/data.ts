@@ -10,6 +10,10 @@ export type Transaction = {
   status: 'Pending' | 'Completed' | 'Cancelled';
   date: Date;
   cashier?: string;
+  // Tambahan untuk tracking kas dan metode
+  method?: string; // Untuk Tarik Tunai: transfer_outlet, atm, qris; Untuk Transfer: tunai, edc_atm
+  outletBank?: string; // Bank outlet untuk transfer (BCA, BNI, BRI, BTN, MANDIRI)
+  cashFlow?: 'in' | 'out'; // Arus kas masuk atau keluar untuk laporan
 };
 
 export const pendingTransactions: Transaction[] = [

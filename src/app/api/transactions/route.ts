@@ -1,10 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { addTransaction, Transaction } from '@/lib/transaction-store';
+import { addTransaction, getTransactions, Transaction } from '@/lib/transaction-store';
+
+export async function GET() {
+  try {
+    const transactions = getTransactions();
+    return NextResponse.json(transactions);
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch transactions' },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    console.log('Received transaction data:', JSON.stringify(body, null, 2));
+    
+    // Validate amount - prevent 0 amount transactions
+    if (!body.amount || body.amount <= 0) {
+      return NextResponse.json(
+        { error: 'Amount must be greater than 0', details: 'Invalid amount provided' },
+        { status: 400 }
+      );
+    }
+    
     const newTransaction = addTransaction(body as Omit<Transaction, 'status' | 'date'>);
+    console.log('Created transaction:', newTransaction.id);
     return NextResponse.json(newTransaction, { status: 201 });
   } catch (error) {
     console.error('Error creating transaction:', error);

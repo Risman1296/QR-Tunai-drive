@@ -6,21 +6,53 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface QRCodeData {
-  qrCode: string;
+  qrCodeDataUrl: string;
   token: string;
   expiresAt: number;
+  id: string;
+  transactionUrl: string;
+  expiresIn: number;
 }
 
 export default function QRPage() {
   const [qrData, setQrData] = useState<QRCodeData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [qrKey, setQrKey] = useState(0);
+  const [tokenStatus, setTokenStatus] = useState<'available' | 'accessed' | 'used'>('available');
 
   // Generate QR code automatically when page loads
   useEffect(() => {
     generateQR();
   }, []);
+
+  // Poll token status and auto-refresh when accessed/used
+  useEffect(() => {
+    if (!qrData?.id) return;
+
+    const checkTokenStatus = async () => {
+      try {
+        const response = await fetch(`/api/tokens/${qrData.id}/status`);
+        const data = await response.json();
+        
+        if (data.status.accessed && tokenStatus === 'available') {
+          setTokenStatus('accessed');
+          // Generate new QR when token is accessed
+          setTimeout(() => generateQR(), 1000);
+        } else if (data.status.used && tokenStatus !== 'used') {
+          setTokenStatus('used');
+          // Generate new QR when token is used
+          setTimeout(() => generateQR(), 2000);
+        }
+      } catch (error) {
+        console.error('Error checking token status:', error);
+      }
+    };
+
+    // Check every 2 seconds
+    const interval = setInterval(checkTokenStatus, 2000);
+    return () => clearInterval(interval);
+  }, [qrData?.id, tokenStatus]);
 
   const generateQR = async () => {
     setLoading(true);
@@ -43,8 +75,15 @@ export default function QRPage() {
       }
 
       const data = await response.json();
+      
+      if (!data.qrCodeDataUrl) {
+        console.error('API response missing qrCodeDataUrl:', data);
+        throw new Error('Invalid QR code data received');
+      }
+      
       setQrData(data);
-      setTimeRemaining(300); // 5 minutes
+      setQrKey(prev => prev + 1);
+      setTokenStatus('available');
     } catch (error) {
       console.error('Error generating QR:', error);
       setError('Failed to generate QR code. Please try again.');
@@ -53,34 +92,25 @@ export default function QRPage() {
     }
   };
 
-  // Countdown timer
-  useEffect(() => {
-    if (timeRemaining > 0) {
-      const timer = setTimeout(() => setTimeRemaining(timeRemaining - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (timeRemaining === 0 && qrData) {
-      // Auto-refresh QR when expired
-      generateQR();
+  // Function to get status display
+  const getStatusDisplay = () => {
+    switch (tokenStatus) {
+      case 'accessed':
+        return { text: 'Sedang digunakan', color: 'bg-yellow-50 text-yellow-700', icon: '👤' };
+      case 'used':
+        return { text: 'Transaksi selesai', color: 'bg-green-50 text-green-700', icon: '✅' };
+      default:
+        return { text: 'Menunggu pelanggan', color: 'bg-blue-50 text-blue-700', icon: '📱' };
     }
-  }, [timeRemaining, qrData]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    return mins.toString();
   };
+
+  const status = getStatusDisplay();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
       <div className="max-w-md mx-auto w-full">
         <Card className="shadow-lg">
           <CardHeader className="text-center border-b pb-4">
-            <div className="flex justify-center mb-3">
-              <img 
-                src="/logo.png" 
-                alt="QR Tunai Logo" 
-                className="h-16 w-16" 
-              />
-            </div>
             <CardTitle className="text-2xl font-bold text-gray-800">
               QR Tunai Drive-Thru
             </CardTitle>
@@ -95,16 +125,38 @@ export default function QRPage() {
                 </div>
               ) : qrData ? (
                 <div className="text-center space-y-4">
-                  <div className="p-6 bg-white border-2 border-blue-200 rounded-lg shadow-sm">
+                  <div className={`p-6 bg-white border-2 rounded-lg shadow-sm transition-all ${
+                    tokenStatus === 'accessed' ? 'border-yellow-300 bg-yellow-50' : 
+                    tokenStatus === 'used' ? 'border-green-300 bg-green-50' : 'border-blue-200'
+                  }`}>
                     <img 
-                      src={qrData.qrCode} 
+                      key={qrKey}
+                      src={qrData.qrCodeDataUrl} 
                       alt="QR Code" 
-                      className="w-full h-auto max-w-72 mx-auto"
+                      className={`w-full h-auto max-w-72 mx-auto transition-opacity ${
+                        tokenStatus === 'used' ? 'opacity-50' : 'opacity-100'
+                      }`}
                     />
+                    {tokenStatus !== 'available' && (
+                      <div className={`mt-2 text-sm font-medium ${status.color.split(' ').slice(1).join(' ')}`}>
+                        {status.icon} {status.text}
+                      </div>
+                    )}
                   </div>
-                  <div className="text-sm font-medium text-gray-700 bg-blue-50 py-2 px-4 rounded-full inline-block">
-                    <span className="font-mono text-blue-700">{formatTime(timeRemaining)}</span> menit
+                  
+                  <div className={`text-sm font-medium py-2 px-4 rounded-full inline-block ${status.color}`}>
+                    {status.icon} Status: {status.text}
                   </div>
+                  
+                  <Button 
+                    onClick={generateQR} 
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    disabled={loading}
+                  >
+                    Generate QR Baru
+                  </Button>
                 </div>
               ) : (
                 <div className="w-72 h-72 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
@@ -128,8 +180,13 @@ export default function QRPage() {
             )}
 
             <div className="text-center text-sm text-gray-700 space-y-1 pt-4 border-t border-gray-100">
-              <p>QR ini digunakan untuk transaksi Drive-Thru</p>
-              <p>Scan menggunakan kamera HP di loket</p>
+              <p>1 QR Code = 1 Pelanggan</p>
+              <p>QR otomatis berganti ketika digunakan</p>
+              {qrData && (
+                <p className="text-xs text-gray-500 font-mono mt-2">
+                  ID: {qrData.id.slice(0, 8)}...
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
