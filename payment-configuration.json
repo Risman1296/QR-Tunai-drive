@@ -1,0 +1,60 @@
+{
+  "bankAccounts": [
+    {
+      "id": "bca-main",
+      "bankName": "Bank Central Asia",
+      "bankCode": "014",
+      "accountNumber": "123-456-7890",
+      "accountHolder": "PT QR Tunai Sejahtera",
+      "balance": 150750000,
+      "isActive": true,
+      "logo": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjUwIiB2aWV3Qm94PSIwIDAgMTAwIDUwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iNTAiIGZpbGw9IiMwMDY2Q0MiLz48dGV4dCB4PSI1MCIgeT0iMzAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSJib2xkIj5CQ0E8L3RleHQ+PC9zdmc+",
+      "swiftCode": "CENAIDJA",
+      "branchName": "KCP Jakarta Pusat",
+      "branchCode": "0001",
+      "accountType": "current",
+      "dailyLimit": 500000000,
+      "monthlyLimit": 10000000000,
+      "createdAt": "2025-09-17T21:36:45.365Z",
+      "updatedAt": "2025-09-17T21:36:45.365Z"
+    },
+    {
+      "id": "mandiri-main",
+      "bankName": "Bank Mandiri",
+      "bankCode": "008",
+      "accountNumber": "098-765-4321",
+      "accountHolder": "PT QR Tunai Sejahtera",
+      "balance": 85200000,
+      "isActive": true,
+      "logo": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjUwIiB2aWV3Qm94PSIwIDAgMTAwIDUwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iNTAiIGZpbGw9IiNGRkMwMDAiLz48dGV4dCB4PSI1MCIgeT0iMzAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMwMDMzOTkiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMiIgZm9udC13ZWlnaHQ9ImJvbGQiPk1BTkRJUkk8L3RleHQ+PC9zdmc+",
+      "swiftCode": "BMRIIDJA",
+      "branchName": "KCP Jakarta Pusat",
+      "branchCode": "0010",
+      "accountType": "current",
+      "dailyLimit": 300000000,
+      "monthlyLimit": 5000000000,
+      "createdAt": "2025-09-17T21:36:45.365Z",
+      "updatedAt": "2025-09-17T21:36:45.365Z"
+    }
+  ],
+  "qrisAccounts": [
+    {
+      "id": "qris-main",
+      "merchantId": "QRT123456",
+      "merchantName": "QR Tunai Drive-Thru",
+      "qrisCode": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+      "logoUrl": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIGZpbGw9IiNGRjMzMDAiLz48dGV4dCB4PSIyNSIgeT0iMzAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIiBmb250LXNpemU9IjEyIj5RPC90ZXh0Pjwvc3ZnPg==",
+      "isActive": true,
+      "feePercentage": 0.7,
+      "dailyLimit": 20000000,
+      "monthlyLimit": 500000000,
+      "createdAt": "2025-09-17T21:36:45.365Z",
+      "updatedAt": "2025-09-17T21:36:45.365Z"
+    }
+  ],
+  "defaultBankAccount": "bca-main",
+  "defaultQrisAccount": "qris-main",
+  "autoBackup": true,
+  "backupInterval": 24,
+  "lastBackup": "2025-09-17T21:36:45.370Z"
+}

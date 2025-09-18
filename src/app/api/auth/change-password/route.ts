@@ -175,7 +175,7 @@ async function updateAdminPasswordInLoginSystem(userId: string, hashedPassword: 
 // Function to update employee password
 async function updateEmployeePassword(employeeId: string, currentPassword: string, newPassword: string) {
   try {
-    const { findEmployeeById, updateEmployeePassword: updatePassword } = require('../employees/employees-storage');
+    const { findEmployeeById, updateEmployeePassword: updatePassword } = require('../../employees/employees-storage');
     
     // Find the employee
     const employee = findEmployeeById(employeeId);

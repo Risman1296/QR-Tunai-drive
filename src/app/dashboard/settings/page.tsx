@@ -28,8 +28,9 @@ import Image from "next/image"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import PinProtection from '@/components/pin-protection'
-import { usePinStore } from '@/lib/pin-store'
+import PaymentAccountSettings from '@/components/payment-account-settings';
+import PinProtection from '@/components/pin-protection';
+import { usePinStore } from '@/lib/pin-store';
 
 const feeSettings = [
     { id: "FEE01", type: "Transfer Antar Bank", fee: "Rp 6.500", status: true },
@@ -477,49 +478,7 @@ export default function SettingsPage() {
         </TabsContent>
         
         <TabsContent value="payment">
-          <Card>
-            <CardHeader>
-              <CardTitle>Akun Pembayaran Outlet</CardTitle>
-              <CardDescription>
-                Atur rekening bank dan kode QRIS yang akan ditampilkan kepada pelanggan di formulir transaksi.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                        <h3 className="font-medium">Rekening Bank untuk Transfer</h3>
-                        <div className="space-y-2">
-                            <Label htmlFor="bankName">Nama Bank</Label>
-                            <Input id="bankName" defaultValue="Bank QR Tunai" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="accountNumber">Nomor Rekening</Label>
-                            <Input id="accountNumber" defaultValue="123-456-7890" />
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="accountHolder">Nama Pemilik Rekening</Label>
-                            <Input id="accountHolder" defaultValue="PT QR Tunai Sejahtera" />
-                        </div>
-                    </div>
-                    <div className="space-y-4">
-                        <h3 className="font-medium">Kode QRIS</h3>
-                        <div className="space-y-2">
-                            <Label htmlFor="qrisUrl">URL Gambar QRIS</Label>
-                            <Input id="qrisUrl" defaultValue="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=example" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Pratinjau QRIS</Label>
-                            <div className="p-2 border rounded-md bg-white w-fit">
-                                <Image src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=example" data-ai-hint="QR code" alt="QRIS Code" width={150} height={150} />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                 <div className="flex justify-end pt-4">
-                    <Button>Simpan Akun Pembayaran</Button>
-                </div>
-            </CardContent>
-          </Card>
+          <PaymentAccountSettings />
         </TabsContent>
 
         <TabsContent value="outlet">

@@ -12,23 +12,25 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { FormattedInput } from "@/components/ui/formatted-input";
 import { Notification } from "@/components/notification";
+import BankLogo from "@/components/bank-logo";
+import { INDONESIAN_BANK_CODES } from "@/lib/bank-logos";
 import Link from "next/link";
 import { useState, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 
-// Data options
+// Data options - Updated dengan bank Indonesia standar
 const bankOptions = [
-	{ value: "Bank Central Asia", label: "Bank Central Asia (BCA)" },
-	{ value: "Bank Mandiri", label: "Bank Mandiri" },
-	{ value: "Bank Rakyat Indonesia", label: "Bank Rakyat Indonesia (BRI)" },
-	{ value: "Bank Syariah Indonesia", label: "Bank Syariah Indonesia (BSI)" },
-	{ value: "Bank Negara Indonesia", label: "Bank Negara Indonesia (BNI)" },
-	{ value: "Bank Tabungan Negara", label: "Bank Tabungan Negara (BTN)" },
-	{ value: "Citibank", label: "Citibank" },
-	{ value: "Permata", label: "Bank Permata" },
-	{ value: "Lainnya", label: "Bank Lainnya" },
+	{ value: "Bank Central Asia", label: "Bank Central Asia (BCA)", code: "BCA" },
+	{ value: "Bank Mandiri", label: "Bank Mandiri", code: "MANDIRI" },
+	{ value: "Bank Rakyat Indonesia", label: "Bank Rakyat Indonesia (BRI)", code: "BRI" },
+	{ value: "Bank Negara Indonesia", label: "Bank Negara Indonesia (BNI)", code: "BNI" },
+	{ value: "Bank Syariah Indonesia", label: "Bank Syariah Indonesia (BSI)", code: "BSI" },
+	{ value: "Bank Tabungan Negara", label: "Bank Tabungan Negara (BTN)", code: "BTN" },
+	{ value: "CIMB Niaga", label: "CIMB Niaga", code: "CIMB" },
+	{ value: "Bank Danamon", label: "Bank Danamon", code: "DANAMON" },
+	{ value: "Bank Permata", label: "Bank Permata", code: "PERMATA" },
+	{ value: "Lainnya", label: "Bank Lainnya", code: "OTHER" },
 ];
 
 const paymentTypes = [
@@ -73,10 +75,18 @@ const formatRupiah = (amount: number): string => {
     currency: 'IDR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
-  }).format(amount).replace('IDR', 'Rp');
+  }).format(amount);
 };
 
-// Schema validasi form
+// Fungsi untuk parse value dari input rupiah
+const parseRupiahValue = (value: string): number => {
+  if (!value) return 0;
+  // Remove "Rp", dots, and spaces, keep only numbers
+  const numericValue = value.replace(/[^\d]/g, '');
+  return parseInt(numericValue) || 0;
+};
+
+// Schema validasi form - Updated dengan validasi yang lebih ketat
 const formSchema = z.object({
 	type: z.string().min(1, "Pilih jenis transaksi"),
 	bank: z.string().optional(),
@@ -85,16 +95,28 @@ const formSchema = z.object({
 		.refine(val => !val || /^\d+$/.test(val), {
 			message: "Nomor rekening hanya boleh berisi angka"
 		}),
-	customerName: z.string().min(1, "Nama wajib diisi"),
-	amount: z.coerce.number().min(1000, "Minimal Rp1.000"),
+	customerName: z.string().min(2, "Nama minimal 2 karakter").max(100, "Nama maksimal 100 karakter"),
+	amount: z.coerce.number()
+		.min(10000, "Nominal minimal Rp10.000")
+		.max(500000000, "Nominal maksimal Rp500.000.000"),
 	notes: z.string().optional(),
 	ewallet: z.string().optional(),
 	phone: z.string()
 		.optional()
 		.refine(val => !val || /^(08|\+628)[0-9]{8,11}$/.test(val), {
-			message: "Format nomor HP tidak valid"
+			message: "Format nomor HP tidak valid (contoh: 08123456789)"
 		}),
 	verification: z.boolean().optional(),
+}).superRefine((data, ctx) => {
+	// Custom validation untuk QRIS limit
+	if (data.type === "Tarik Tunai" && data.amount && data.amount > 1000000) {
+		// Check if QRIS method is being used - this would need to be passed through context
+		ctx.addIssue({
+			code: z.ZodIssueCode.custom,
+			message: "Untuk QRIS, nominal maksimal Rp1.000.000",
+			path: ["amount"]
+		});
+	}
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -269,18 +291,21 @@ export default function TransactionForm() {
 										name="amount"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Nominal</FormLabel>
+												<FormLabel>Nominal Top Up</FormLabel>
 												<FormControl>
-													<FormattedInput 
-														placeholder="Masukkan nominal" 
-														{...field} 
-														value={field.value || undefined}
+													<Input 
+														type="text"
+														placeholder="Rp 0" 
+														value={field.value ? formatRupiah(field.value) : ""}
 														onChange={(e) => {
-															const value = e.target.value ? parseInt(e.target.value) : 0;
-															field.onChange(value);
+															const numericValue = parseRupiahValue(e.target.value);
+															field.onChange(numericValue);
 														}}
 													/>
 												</FormControl>
+												<FormDescription>
+													Nominal minimal Rp10.000, maksimal Rp500.000.000
+												</FormDescription>
 												<FormMessage />
 											</FormItem>
 										)}
@@ -319,7 +344,18 @@ export default function TransactionForm() {
 														</FormControl>
 														<SelectContent>
 															{bankOptions.map((bank) => (
-																<SelectItem key={bank.value} value={bank.value}>{bank.label}</SelectItem>
+																<SelectItem key={bank.value} value={bank.value}>
+																	<div className="flex items-center gap-2">
+																		{bank.code !== "OTHER" && (
+																			<BankLogo 
+																				bankCode={bank.code} 
+																				bankName={bank.label}
+																				size="sm"
+																			/>
+																		)}
+																		<span>{bank.label}</span>
+																	</div>
+																</SelectItem>
 															))}
 														</SelectContent>
 													</Select>
@@ -359,18 +395,21 @@ export default function TransactionForm() {
 										name="amount"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Nominal</FormLabel>
+												<FormLabel>Nominal Transfer</FormLabel>
 												<FormControl>
-													<FormattedInput 
-														placeholder="Masukkan nominal" 
-														{...field} 
-														value={field.value || undefined}
+													<Input 
+														type="text"
+														placeholder="Rp 0" 
+														value={field.value ? formatRupiah(field.value) : ""}
 														onChange={(e) => {
-															const value = e.target.value ? parseInt(e.target.value) : 0;
-															field.onChange(value);
+															const numericValue = parseRupiahValue(e.target.value);
+															field.onChange(numericValue);
 														}}
 													/>
 												</FormControl>
+												<FormDescription>
+													Nominal minimal Rp10.000, maksimal Rp500.000.000
+												</FormDescription>
 												<FormMessage />
 											</FormItem>
 										)}
@@ -447,18 +486,21 @@ export default function TransactionForm() {
 										name="amount"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Nominal</FormLabel>
+												<FormLabel>Nominal Tarik Tunai</FormLabel>
 												<FormControl>
-													<FormattedInput 
-														placeholder="Masukkan nominal" 
-														{...field} 
-														value={field.value || undefined}
+													<Input 
+														type="text"
+														placeholder="Rp 0" 
+														value={field.value ? formatRupiah(field.value) : ""}
 														onChange={(e) => {
-															const value = e.target.value ? parseInt(e.target.value) : 0;
-															field.onChange(value);
+															const numericValue = parseRupiahValue(e.target.value);
+															field.onChange(numericValue);
 														}}
 													/>
 												</FormControl>
+												<FormDescription>
+													{tarikMethod === "qris" ? "Maksimal Rp1.000.000 untuk QRIS" : "Nominal minimal Rp10.000, maksimal Rp500.000.000"}
+												</FormDescription>
 												<FormMessage />
 											</FormItem>
 										)}
@@ -499,7 +541,18 @@ export default function TransactionForm() {
 														</FormControl>
 														<SelectContent>
 															{bankOptions.map((bank) => (
-																<SelectItem key={bank.value} value={bank.value}>{bank.label}</SelectItem>
+																<SelectItem key={bank.value} value={bank.value}>
+																	<div className="flex items-center gap-2">
+																		{bank.code !== "OTHER" && (
+																			<BankLogo 
+																				bankCode={bank.code} 
+																				bankName={bank.label}
+																				size="sm"
+																			/>
+																		)}
+																		<span>{bank.label}</span>
+																	</div>
+																</SelectItem>
 															))}
 														</SelectContent>
 													</Select>
@@ -539,18 +592,21 @@ export default function TransactionForm() {
 										name="amount"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Nominal</FormLabel>
+												<FormLabel>Nominal Setor Tunai</FormLabel>
 												<FormControl>
-													<FormattedInput 
-														placeholder="Masukkan nominal" 
-														{...field} 
-														value={field.value || undefined}
+													<Input 
+														type="text"
+														placeholder="Rp 0" 
+														value={field.value ? formatRupiah(field.value) : ""}
 														onChange={(e) => {
-															const value = e.target.value ? parseInt(e.target.value) : 0;
-															field.onChange(value);
+															const numericValue = parseRupiahValue(e.target.value);
+															field.onChange(numericValue);
 														}}
 													/>
 												</FormControl>
+												<FormDescription>
+													Nominal minimal Rp10.000, maksimal Rp500.000.000
+												</FormDescription>
 												<FormMessage />
 											</FormItem>
 										)}

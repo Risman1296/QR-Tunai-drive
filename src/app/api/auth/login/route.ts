@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 function getEmployeesFromStorage() {
   try {
     // Use the centralized employee storage
-    const { getEmployeesFromStorage: getEmployees } = require('../employees/employees-storage');
+    const { getEmployeesFromStorage: getEmployees } = require('../../employees/employees-storage');
     return getEmployees();
   } catch (error) {
     console.error('Error loading employees:', error);
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
 
     // Check employee login (phone number based)
     const employees = getEmployeesFromStorage();
-    const employee = employees.find(emp => emp.contactNumber === username);
+    const employee = employees.find((emp: { contactNumber: any; }) => emp.contactNumber === username);
     
     if (!employee) {
       return NextResponse.json(

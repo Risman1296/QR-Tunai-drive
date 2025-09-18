@@ -7,6 +7,7 @@ import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import BankLogo from "@/components/bank-logo";
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('id-ID', {
@@ -61,7 +62,12 @@ function BankAccountItem({ account }: { account: BankAccount }) {
                     size="lg"
                     className="h-12 justify-start group-data-[collapsible=icon]:justify-center flex-1"
                     tooltip={{ children: tooltipContent, side: "right", align: "center" }}>
-                    <Image src={account.logo} alt={`${account.bankName} logo`} width={32} height={32} className="shrink-0 group-data-[collapsible=icon]:w-6 group-data-[collapsible=icon]:h-6" />
+                    <BankLogo 
+                      bankCode={account.id.toUpperCase()} 
+                      bankName={account.bankName}
+                      size="lg"
+                      className="shrink-0 group-data-[collapsible=icon]:w-6 group-data-[collapsible=icon]:h-6" 
+                    />
                     <div className="flex flex-col items-start truncate group-data-[collapsible=icon]:hidden">
                     <span className="font-medium leading-tight">{account.bankName}</span>
                     <span className="text-xs text-sidebar-foreground/70 leading-tight">{formatCurrency(account.balance)}</span>

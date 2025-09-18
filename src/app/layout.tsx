@@ -3,6 +3,9 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 
+// Initialize WiFi automation on app startup (server-side only)
+import '@/lib/wifi-startup';
+
 export const metadata: Metadata = {
   title: 'QR Tunai Drive',
   description: 'Transaksi keuangan cepat, aman, dan nyaman melalui drive-thru.',
