@@ -1,0 +1,51 @@
+# VS Code Remote SSH - Step by Step Guide
+# Cara connect VS Code langsung ke server
+
+## Step 1: Setup SSH Config
+# Copy isi ini ke file: C:\Users\advan\.ssh\config (tanpa ekstensi .txt)
+
+Host qr-tunai-server
+    HostName [GANTI_DENGAN_IP_SERVER_ANDA]
+    User [GANTI_DENGAN_USERNAME_ANDA]
+    Port 22
+    IdentityFile ~/.ssh/id_rsa
+
+## Step 2: Connect via VS Code
+# 1. Press Ctrl+Shift+P
+# 2. Type: "Remote-SSH: Connect to Host"
+# 3. Select "qr-tunai-server"
+# 4. Pilih platform: Linux
+# 5. Enter password jika diminta
+
+## Step 3: Open Project Folder di Server
+# 1. Setelah terhubung, press Ctrl+O
+# 2. Navigate ke: /var/www/qr-tunai
+# 3. Open folder
+
+## Step 4: Deploy Project ke Server
+# 1. Buka terminal di VS Code (Ctrl+`)
+# 2. Jalankan commands berikut:
+
+# Clone project (fresh installation)
+sudo mkdir -p /var/www/qr-tunai
+sudo chown -R $USER:$USER /var/www/qr-tunai
+cd /var/www
+git clone https://github.com/Risman1296/QR-Tunai-drive.git qr-tunai
+cd qr-tunai
+
+# Install dan build
+npm install
+npm run build
+
+# Start dengan PM2
+pm2 start ecosystem.config.js
+pm2 save
+
+## Keuntungan VS Code Remote SSH:
+# ✅ Edit file langsung di server
+# ✅ Terminal terintegrasi
+# ✅ Extension bekerja di remote
+# ✅ File explorer server
+# ✅ Git integration
+# ✅ Debugging di server
+# ✅ Port forwarding otomatis

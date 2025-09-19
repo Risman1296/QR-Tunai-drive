@@ -1026,6 +1026,7 @@ export default function TransactionForm() {
 														checked={!!field.value}
 														onChange={e => field.onChange(e.target.checked)}
 														className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+														aria-label="Verifikasi dan persetujuan data transaksi"
 													/>
 												</FormControl>
 												<div className="space-y-1 leading-none">

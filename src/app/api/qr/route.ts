@@ -20,8 +20,10 @@ export async function POST(request: NextRequest) {
     const transactionUrl = `/t/${tokenId}/form`;
     
     // Dynamically construct base URL from request headers to ensure same port
-    const host = request.headers.get('host') || 'localhost:3001';
-    const protocol = request.headers.get('x-forwarded-proto') || (process.env.NODE_ENV === 'production' ? 'https' : 'http');
+    const host = request.headers.get('host') || 'localhost:4000';
+    const protocol = request.headers.get('x-forwarded-proto') || 
+                    (request.headers.get('x-forwarded-port') === '443' ? 'https' : 'http') ||
+                    (process.env.NODE_ENV === 'production' ? 'http' : 'http');
     
     // Check if request comes from localhost/127.0.0.1, then use network IP for mobile access
     let baseHost = host;
@@ -33,10 +35,13 @@ export async function POST(request: NextRequest) {
       if (productionUrl) {
         const prodUrl = new URL(productionUrl);
         baseHost = prodUrl.host;
+      } else {
+        // Fallback to current host if no production URL is set
+        baseHost = host;
       }
     } else if (host.includes('localhost') || host.includes('127.0.0.1')) {
       // Extract port from host
-      const port = host.split(':')[1] || '3001';
+      const port = host.split(':')[1] || '4000';
       // Use environment variable or keep localhost for development
       const networkIp = process.env.NETWORK_IP;
       if (networkIp && networkIp !== '0.0.0.0') {
@@ -57,18 +62,30 @@ export async function POST(request: NextRequest) {
     console.log('Final QR URL:', fullUrl);
     console.log('================================');
     
-    // Generate QR code
-    const qrCodeDataUrl = await QRCode.toDataURL(fullUrl, {
-      width: 256,
-      margin: 2,
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF'
-      },
-      errorCorrectionLevel: 'M'
-    });
-    
-    console.log('QR Code generated successfully, size:', qrCodeDataUrl.length, 'characters');
+    // Generate QR code with error handling
+    let qrCodeDataUrl;
+    try {
+      qrCodeDataUrl = await QRCode.toDataURL(fullUrl, {
+        width: 256,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        },
+        errorCorrectionLevel: 'M'
+      });
+      
+      console.log('QR Code generated successfully, size:', qrCodeDataUrl.length, 'characters');
+      
+      // Validate QR code data
+      if (!qrCodeDataUrl.startsWith('data:image/png;base64,')) {
+        throw new Error('Invalid QR code format generated');
+      }
+      
+    } catch (qrError) {
+      console.error('QR Code generation failed:', qrError);
+      throw new Error(`QR code generation failed: ${qrError instanceof Error ? qrError.message : 'Unknown QR error'}`);
+    }
     
     // Ensure consistent naming with client expectations
     return NextResponse.json({
