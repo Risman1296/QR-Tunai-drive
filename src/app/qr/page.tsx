@@ -27,7 +27,6 @@ export default function QrPage() {
   const [qrData, setQrData] = useState<QRCodeData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [tokenStatus, setTokenStatus] = useState<'available' | 'accessed' | 'used'>('available');
-  const [timeRemaining, setTimeRemaining] = useState(0);
   const { toast } = useToast();
 
   const fetchQrCode = useCallback(async () => {
@@ -73,7 +72,6 @@ export default function QrPage() {
       }
       
       setQrData(data);
-      setTimeRemaining(Math.floor(data.expiresIn || 120)); // Default 2 minutes if not provided
       setTokenStatus('available');
       
       console.log('✅ QR code generated successfully');
@@ -142,24 +140,6 @@ export default function QrPage() {
     return () => clearInterval(interval);
   }, [qrData?.id, tokenStatus, fetchQrCode]);
 
-  // Countdown timer - using seconds directly for expiration only
-  useEffect(() => {
-    if (timeRemaining > 0) {
-      const timer = setTimeout(() => {
-        setTimeRemaining(timeRemaining - 1);
-        
-        // Log remaining time for debugging
-        if (timeRemaining % 10 === 0) {
-          console.log(`⏰ Time remaining: ${timeRemaining}s`);
-        }
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (timeRemaining === 0 && qrData) {
-      console.log('⏰ Timer expired, generating new QR');
-      fetchQrCode();
-    }
-  }, [timeRemaining, qrData, fetchQrCode]);
-
   const handleCopy = () => {
     if (qrData?.transactionUrl) {
       navigator.clipboard
@@ -185,12 +165,6 @@ export default function QrPage() {
     if (document.documentElement.requestFullscreen) {
       document.documentElement.requestFullscreen();
     }
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -243,8 +217,6 @@ export default function QrPage() {
         <p className="font-mono break-all p-2 bg-muted rounded-md">{qrData?.transactionUrl || 'Memuat link...'}</p>
         <p className="mt-4">
           QR akan berubah ketika pelanggan mengakses form transaksi.
-          <br />
-          Waktu tersisa: <span className="font-bold text-primary">{formatTime(timeRemaining)}</span>
           <br />
           Jika kamera gagal memindai, salin link di atas.
         </p>
