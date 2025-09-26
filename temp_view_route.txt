@@ -1,0 +1,1 @@
+// DEPRECATED: Redirect to new SSE endpoint

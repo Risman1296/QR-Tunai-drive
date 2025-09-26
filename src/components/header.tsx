@@ -4,29 +4,25 @@ import { QrCode, LogIn } from 'lucide-react';
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-sm shadow-sm">
-      <div className="container flex h-16 items-center justify-between">
+    <header className="header-gradient-fade sticky top-0 z-[60] w-full bg-transparent text-white">
+      <div className="mx-auto flex h-16 max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8 relative z-10">
         <Link href="/" className="flex items-center gap-3">
-          <div className="relative">
-            <QrCode className="h-8 w-8 text-qr-blue-500" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-qr-yellow-500 rounded-full"></div>
+          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
+            <QrCode className="h-6 w-6 text-qr-yellow-400" />
+            <div className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-qr-yellow-400" />
           </div>
-          <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-tight text-qr-blue-700">
-              QR<span className="text-qr-yellow-600">Tunai</span>
+          <div className="flex flex-col leading-tight">
+            <span className="text-lg font-semibold tracking-tight">
+              QR<span className="text-qr-yellow-400">Tunai</span>
             </span>
-            <span className="text-xs text-qr-blue-400 -mt-1">Digital Payment</span>
+            <span className="-mt-0.5 text-[11px] uppercase tracking-wide text-white/70">Fintech Enabler</span>
           </div>
         </Link>
         <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            asChild 
-            className="text-qr-blue-600 hover:text-qr-blue-700 hover:bg-qr-yellow-50"
-          >
-            <Link href="/login">
-              <LogIn className="mr-2 h-4 w-4" />
-              Login
+          <Button asChild className="rounded-xl bg-qr-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-qr-blue-500">
+            <Link href="/login" className="flex items-center gap-2">
+              <LogIn className="h-4 w-4" />
+              <span>Login</span>
             </Link>
           </Button>
         </div>

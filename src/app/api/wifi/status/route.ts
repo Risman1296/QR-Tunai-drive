@@ -1,10 +1,14 @@
-/**
+﻿/**
  * Router Status API
  * Monitors Orbit H2 router health and connectivity
  */
 
 import { NextResponse } from 'next/server';
 import { OrbitH2Controller } from '@/lib/orbit-h2-controller';
+
+// Dynamic: router status changes per request
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET() {
   try {

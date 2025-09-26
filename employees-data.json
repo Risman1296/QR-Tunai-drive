@@ -1,0 +1,50 @@
+[
+  {
+    "id": "emp-001",
+    "name": "Ahmad Supervisor",
+    "role": "Supervisor",
+    "shiftId": "shift-morning",
+    "contactNumber": "081234567890",
+    "password": "admin123",
+    "email": "ahmad.supervisor@qrtunai.com",
+    "isOnDuty": false,
+    "canAccessDashboard": true,
+    "isActive": true
+  },
+  {
+    "id": "emp-002",
+    "name": "Siti Kasir Roda 2",
+    "role": "Kasir Roda 2",
+    "shiftId": "shift-morning",
+    "contactNumber": "081234567891",
+    "password": "kasir123",
+    "email": "siti.kasir@qrtunai.com",
+    "isOnDuty": false,
+    "canAccessDashboard": true,
+    "isActive": true
+  },
+  {
+    "id": "emp-003",
+    "name": "Eko Kasir Roda 4",
+    "role": "Kasir Roda 4",
+    "shiftId": "shift-morning",
+    "contactNumber": "081234567892",
+    "password": "kasir123",
+    "email": "eko.kasir@qrtunai.com",
+    "isOnDuty": false,
+    "canAccessDashboard": true,
+    "isActive": true
+  },
+  {
+    "id": "emp-004",
+    "name": "Budi Security",
+    "role": "Security",
+    "shiftId": "shift-morning",
+    "contactNumber": "081234567893",
+    "password": "security123",
+    "email": "budi.security@qrtunai.com",
+    "isOnDuty": false,
+    "canAccessDashboard": true,
+    "isActive": true
+  }
+]

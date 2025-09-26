@@ -1,10 +1,13 @@
 # Ignore qrtunai-backend
+
 qrtunai-backend/**/*
 
 # Ignore node_modules
+
 node_modules/**/*
 
 # Ignore build artifacts
+
 .next/**/*
 out/**/*
 build/**/*

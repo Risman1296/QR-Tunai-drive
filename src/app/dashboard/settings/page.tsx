@@ -29,17 +29,86 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import PaymentAccountSettings from '@/components/payment-account-settings';
+import BankIntegrationManager from '@/components/bank-integration-manager';
 import PinProtection from '@/components/pin-protection';
 import { usePinStore } from '@/lib/pin-store';
 
-const feeSettings = [
-    { id: "FEE01", type: "Transfer Antar Bank", fee: "Rp 6.500", status: true },
-    { id: "FEE02", type: "Tarik Tunai (Beda Bank)", fee: "Rp 7.500", status: true },
-    { id: "FEE03", type: "Pembayaran QRIS (> 100rb)", fee: "0.7%", status: true },
-    { id: "FEE04", type: "Biaya Layanan Drive-Thru", fee: "Rp 2.000", status: false },
-]
 
+import { useEffect } from 'react';
+import type { TransactionFee } from '@/lib/system-config';
+
+function generateId() {
+  return 'FEE' + Math.random().toString(36).slice(2, 7).toUpperCase();
+}
+
+// Tarif logic moved below, only one export default allowed
 export default function SettingsPage() {
+  // Tarif/fee state and handlers
+  const [feeSettings, setFeeSettings] = useState<TransactionFee[]>([]);
+  const [feeLoading, setFeeLoading] = useState(false);
+  const [feeChanged, setFeeChanged] = useState(false);
+  const [feeError, setFeeError] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    setFeeLoading(true);
+    fetch('/api/system/config')
+      .then(res => res.json())
+      .then(data => {
+        setFeeSettings(data?.config?.transactionFees || []);
+        setFeeLoading(false);
+      })
+      .catch(() => {
+        setFeeError('Gagal memuat data tarif');
+        setFeeLoading(false);
+      });
+  }, []);
+
+  const handleFeeChange = (idx: number, key: keyof TransactionFee, value: string | boolean) => {
+    setFeeSettings(fees => {
+      const next = [...fees];
+      next[idx] = { ...next[idx], [key]: value };
+      return next;
+    });
+    setFeeChanged(true);
+  };
+  const handleAddFee = () => {
+    setFeeSettings(fees => [
+      ...fees,
+      { id: generateId(), type: '', fee: '', status: true },
+    ]);
+    setFeeChanged(true);
+  };
+  const handleRemoveFee = (idx: number) => {
+    setFeeSettings(fees => fees.filter((_, i) => i !== idx));
+    setFeeChanged(true);
+  };
+  const handleSaveFees = async () => {
+    setFeeLoading(true);
+    setFeeError(null);
+    try {
+      const res = await fetch('/api/system/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transactionFees: feeSettings }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast({ title: 'Berhasil', description: 'Tarif berhasil disimpan.' });
+        setFeeChanged(false);
+      } else {
+        setFeeError(data.error || 'Gagal menyimpan tarif');
+        toast({ variant: 'destructive', title: 'Error', description: data.error });
+      }
+    } catch (e) {
+      setFeeError('Gagal menyimpan tarif');
+      toast({ variant: 'destructive', title: 'Error', description: 'Gagal menyimpan tarif' });
+    } finally {
+      setFeeLoading(false);
+    }
+  };
+
+  // Password and PIN state/handlers
   const [showPassword, setShowPassword] = useState({
     current: false,
     new: false,
@@ -51,7 +120,6 @@ export default function SettingsPage() {
     confirmPassword: ''
   });
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const { toast } = useToast();
 
   // PIN-related state
   const { setAdminPin, verifyPin } = usePinStore();
@@ -439,8 +507,9 @@ export default function SettingsPage() {
           </div>
         </TabsContent>
         
+
         <TabsContent value="fees">
-           <Card>
+          <Card>
             <CardHeader>
               <CardTitle>Tarif Transaksi</CardTitle>
               <CardDescription>
@@ -448,37 +517,65 @@ export default function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-md border">
+              {feeError && <Alert variant="destructive">{feeError}</Alert>}
+              <div className="rounded-md border overflow-x-auto">
                 <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Jenis Transaksi</TableHead>
-                            <TableHead>Tarif</TableHead>
-                            <TableHead className="text-right">Status</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {feeSettings.map((fee) => (
-                        <TableRow key={fee.id}>
-                            <TableCell className="font-medium">{fee.type}</TableCell>
-                            <TableCell>{fee.fee}</TableCell>
-                            <TableCell className="text-right">
-                                <Switch defaultChecked={fee.status} />
-                            </TableCell>
-                        </TableRow>
-                        ))}
-                    </TableBody>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Jenis Transaksi</TableHead>
+                      <TableHead>Tarif</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Aksi</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {feeSettings.map((fee, idx) => (
+                      <TableRow key={fee.id}>
+                        <TableCell>
+                          <Input
+                            value={fee.type}
+                            onChange={e => handleFeeChange(idx, 'type', e.target.value)}
+                            placeholder="Jenis transaksi"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            value={fee.fee}
+                            onChange={e => handleFeeChange(idx, 'fee', e.target.value)}
+                            placeholder="Rp 0 / %"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Switch
+                            checked={fee.status}
+                            onCheckedChange={v => handleFeeChange(idx, 'status', v)}
+                          />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="icon" onClick={() => handleRemoveFee(idx)} title="Hapus">
+                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeWidth="2" d="M6 6l12 12M6 18L18 6"/></svg>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
                 </Table>
               </div>
-               <div className="flex justify-end">
-                    <Button>Simpan Perubahan Tarif</Button>
-                </div>
+              <div className="flex gap-2 justify-between pt-2">
+                <Button variant="outline" onClick={handleAddFee} disabled={feeLoading}>Tambah Tarif</Button>
+                <Button onClick={handleSaveFees} disabled={!feeChanged || feeLoading}>
+                  {feeLoading ? 'Menyimpan...' : 'Simpan Perubahan Tarif'}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
         
         <TabsContent value="payment">
-          <PaymentAccountSettings />
+          <div className="space-y-6">
+            <PaymentAccountSettings />
+            <BankIntegrationManager />
+          </div>
         </TabsContent>
 
         <TabsContent value="outlet">

@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, History, LogOut, QrCode, Settings, FileText, Clock, Wallet, Wifi } from "lucide-react";
+import { LayoutDashboard, History, LogOut, QrCode, Settings, FileText, Clock, Wallet, Wifi, Activity } from "lucide-react";
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarFooter, SidebarContent } from "@/components/ui/sidebar";
 import { Separator } from "./ui/separator";
 import { BankStatusSidebar } from "./bank-status-sidebar";
@@ -24,10 +24,12 @@ export function DashboardNav() {
     // Changed from QR display to manual form input
     { href: "/dashboard/manual", label: "Form Manual", icon: FileText, roles: ['Owner', 'Cashier', 'Admin'] },
     { href: "/dashboard/history", label: "Riwayat", icon: History, roles: ['Owner', 'Cashier', 'Admin'] },
+    { href: "/dashboard/analytics", label: "Analytics", icon: Activity, roles: ['Owner', 'Admin'] },
     { href: "/dashboard/wifi", label: "WiFi Management", icon: Wifi, roles: ['Owner', 'Admin'] },
     { href: "/dashboard/finance", label: "Keuangan", icon: Wallet, roles: ['Owner', 'Admin'] },
     { href: "/dashboard/shifts", label: "Shift Management", icon: Clock, roles: ['Owner', 'Admin'] },
     { href: "/dashboard/settings", label: "Pengaturan", icon: Settings, roles: ['Owner'] },
+    { href: "/dashboard/bri-test", label: "Tes BRI", icon: Activity, roles: ['Owner'] },
   ];
 
   const availableMenuItems = menuItems.filter(item => item.roles.includes(userRole));

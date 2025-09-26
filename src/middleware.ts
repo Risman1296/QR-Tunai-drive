@@ -28,9 +28,14 @@ function verifyJWTSignature(token: string, secret: string): boolean {
     const payload = decodeJWT(token);
     if (!payload) return false;
     
-    // For Edge Runtime, we'll do basic validation
-    // In production, you'd want more robust verification
-    return payload.userId && payload.username && payload.role;
+    // Basic structural validation for both admin and employee tokens
+    // Admin token has: userId, username, role
+    // Employee token has: userId, contactNumber, role, userType
+    return Boolean(
+      payload.userId &&
+      (payload.username || payload.contactNumber) &&
+      payload.role
+    );
   } catch {
     return false;
   }
@@ -72,33 +77,11 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // For login route, redirect to dashboard if already logged in
+  // Important: Do NOT auto-redirect from /login to /dashboard here based solely on token presence.
+  // Let the client-side login page verify session via /api/auth/me and redirect accordingly.
+  // This avoids redirect loops and "blank background" issues when a stale/invalid token exists.
   if (request.nextUrl.pathname === '/login') {
-    const token = request.cookies.get('auth-token')?.value;
-    console.log('Login page access, token:', token ? 'exists' : 'none');
-
-    if (token) {
-      try {
-        const secret = process.env.JWT_SECRET || 'change-this-secret-key-for-production';
-        const isValid = verifyJWTSignature(token, secret);
-        
-        if (isValid) {
-          console.log('Token valid on login page, redirecting to dashboard');
-          return NextResponse.redirect(new URL('/dashboard', request.url));
-        } else {
-          console.log('Token invalid on login page, clearing cookie');
-          const response = NextResponse.next();
-          response.cookies.set('auth-token', '', { maxAge: 0 });
-          return response;
-        }
-      } catch (error) {
-        console.log('Token invalid on login page, clearing cookie. Error:', (error as Error).message);
-        // Token is invalid, clear it and continue to login
-        const response = NextResponse.next();
-        response.cookies.set('auth-token', '', { maxAge: 0 });
-        return response;
-      }
-    }
+    return NextResponse.next();
   }
 
   return NextResponse.next();

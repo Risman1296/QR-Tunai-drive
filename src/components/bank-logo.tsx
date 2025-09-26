@@ -16,18 +16,18 @@ const sizeClasses = {
   xl: 'w-16 h-16'
 };
 
-const BankLogo: React.FC<BankLogoProps> = ({ 
-  bankCode, 
-  bankName, 
-  size = 'md', 
-  className = '' 
+const BankLogo: React.FC<BankLogoProps> = ({
+  bankCode,
+  bankName,
+  size = 'md',
+  className = ''
 }) => {
-  const logo = INDONESIAN_BANK_LOGOS[bankCode as keyof typeof INDONESIAN_BANK_LOGOS];
-  
-  if (!logo) {
-    // Fallback untuk bank yang tidak ada logonya
+  const rawLogo = INDONESIAN_BANK_LOGOS[bankCode as keyof typeof INDONESIAN_BANK_LOGOS];
+  const isInlineSvg = typeof rawLogo === 'string' && rawLogo.trim().startsWith('<');
+
+  if (!rawLogo) {
     return (
-      <div 
+      <div
         className={`${sizeClasses[size]} ${className} bg-gray-100 rounded-lg flex items-center justify-center`}
         title={bankName}
       >
@@ -38,16 +38,29 @@ const BankLogo: React.FC<BankLogoProps> = ({
     );
   }
 
+  if (isInlineSvg) {
+    return (
+      <div
+        className={`${sizeClasses[size]} ${className} flex items-center justify-center`}
+        title={bankName}
+      >
+        <div
+          className="w-full h-full rounded-lg overflow-hidden"
+          dangerouslySetInnerHTML={{ __html: rawLogo }}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div 
+    <div
       className={`${sizeClasses[size]} ${className} flex items-center justify-center`}
       title={bankName}
     >
-      <div 
-        className="w-full h-full rounded-lg overflow-hidden"
-        dangerouslySetInnerHTML={{ 
-          __html: logo 
-        }} 
+      <img
+        src={rawLogo}
+        alt={bankName}
+        className="w-full h-full object-contain"
       />
     </div>
   );

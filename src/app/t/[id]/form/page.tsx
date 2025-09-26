@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 
-const TransactionForm = dynamic(() => import('@/components/transaction-form'), {
+const TransactionForm = dynamic(() => import('@/components/transaction-form-enhanced'), {
   ssr: false,
   loading: () => (
     <div className="flex h-[600px] items-center justify-center">

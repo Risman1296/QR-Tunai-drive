@@ -1,4 +1,8 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
+
+// Force dynamic untuk autentikasi
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function POST() {
   try {
@@ -11,7 +15,8 @@ export async function POST() {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 0 // Expire immediately
+      maxAge: 0, // Expire immediately
+      path: '/'
     });
 
     return response;

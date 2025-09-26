@@ -1,4 +1,4 @@
-/**
+﻿/**
  * WiFi Management API Routes
  * Handles WiFi credentials, router status, and automation
  */
@@ -6,6 +6,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { WiFiManager } from '@/lib/wifi-manager';
 import { OrbitH2Controller } from '@/lib/orbit-h2-controller';
+
+// Dynamic: interacts with router state/credentials
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 /**
  * GET /api/wifi/credentials - Get current WiFi credentials
@@ -54,13 +58,12 @@ export async function POST(request: NextRequest) {
     const result = await OrbitH2Controller.updateGuestPassword(password);
     
     if (result.success || force) {
-      // Log the successful update
-      console.log(`WiFi password updated to: ${password}`);
       
       return NextResponse.json({
         success: true,
         data: {
-          password,
+          // never echo raw password in logs or response
+          password: 'UPDATED',
           updatedAt: new Date().toISOString(),
           method: result.result?.method || 'manual',
           routerResponse: result

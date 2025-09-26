@@ -1,23 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTokenStatus } from '@/lib/token-tracker';
+import { qrTokenStore } from '@/server/qrTokenStore';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const status = getTokenStatus(id);
-    
-    return NextResponse.json({
-      tokenId: id,
-      status: status || { accessed: false, used: false }
-    });
-  } catch (error) {
-    console.error('Error getting token status:', error);
-    return NextResponse.json(
-      { error: 'Failed to get token status' },
-      { status: 500 }
-    );
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const token = qrTokenStore.getToken(id);
+  if (!token) {
+    return NextResponse.json({ error: 'Token not found' }, { status: 404 });
   }
+  const now = Date.now();
+  let status: 'pending' | 'consumed' | 'expired' = 'pending';
+  if (now > token.expiresAt) status = 'expired';
+  else if (token.isConsumed) status = 'consumed';
+
+  return NextResponse.json({
+    id,
+    status,
+    expiresAt: token.expiresAt,
+    consumedAt: token.consumedAt ?? null,
+    viewedAt: token.viewedAt ?? null,
+  });
 }
+

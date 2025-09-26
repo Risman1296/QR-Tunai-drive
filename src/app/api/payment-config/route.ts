@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import {
   getPaymentConfiguration,
@@ -14,6 +14,10 @@ import {
   type BankAccount,
   type QrisAccount
 } from '@/lib/payment-config';
+
+// Force static export untuk Cloudflare Pages
+export const dynamic = 'force-static';
+export const revalidate = 0;
 
 // JWT Secret validation
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -153,11 +157,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (type === 'bank') {
-      const { bankName, bankCode, accountNumber, accountHolder, accountType } = accountData;
-
-      if (!bankName || typeof bankName !== 'string' || bankName.trim().length < 2) {
-        validationErrors.push('Nama bank harus diisi minimal 2 karakter');
-      }
+      const { bankCode, accountNumber, accountHolder, accountType } = accountData;
 
       if (!bankCode || !INDONESIAN_BANK_CODES[bankCode]) {
         validationErrors.push('Kode bank tidak valid');
@@ -218,6 +218,7 @@ export async function POST(request: NextRequest) {
         swiftCode: bankCodeInfo.swiftCode,
         branchName: accountData.branchName ? sanitizeInput(accountData.branchName) : undefined,
         branchCode: accountData.branchCode ? sanitizeInput(accountData.branchCode) : undefined,
+        integrationId: accountData.integrationId ? sanitizeInput(accountData.integrationId) : undefined,
         accountType: accountData.accountType as 'current' | 'savings' | 'escrow',
         dailyLimit: accountData.dailyLimit || 500000000,
         monthlyLimit: accountData.monthlyLimit || 10000000000
@@ -330,6 +331,11 @@ export async function PUT(request: NextRequest) {
 
       let success = false;
       if (type === 'bank') {
+        if (updates.accountNumber) updates.accountNumber = sanitizeInput(updates.accountNumber);
+        if (updates.accountHolder) updates.accountHolder = sanitizeInput(updates.accountHolder);
+        if (updates.branchName) updates.branchName = sanitizeInput(updates.branchName);
+        if (updates.branchCode) updates.branchCode = sanitizeInput(updates.branchCode);
+        if (updates.integrationId) updates.integrationId = sanitizeInput(updates.integrationId);
         success = updateBankAccount(id, updates);
       } else if (type === 'qris') {
         success = updateQrisAccount(id, updates);
@@ -478,3 +484,4 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+

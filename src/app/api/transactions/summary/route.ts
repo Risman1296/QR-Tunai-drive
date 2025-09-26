@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getTransactions, Transaction } from '@/lib/transaction-store';
 
-export const dynamic = 'force-dynamic';
+// Force static export untuk Cloudflare Pages
+export const dynamic = 'force-static';
+export const revalidate = 0;
 
 function calculateSummary(transactions: Transaction[]) {
   const totalRevenue = transactions

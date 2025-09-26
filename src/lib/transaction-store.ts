@@ -53,6 +53,24 @@ export function addTransaction(data: Omit<Transaction, 'id' | 'date' | 'status' 
   return newTransaction;
 }
 
+// Add a new function to create transactions with specific IDs (for QR codes)
+export function addTransactionWithId(id: string, data: Omit<Transaction, 'id' | 'date' | 'status' | 'cashFlow'>): Transaction {
+  // Auto-calculate cash flow based on transaction type and method
+  const cashFlow = determineCashFlow(data.type, data.method);
+  
+  const newTransaction: Transaction = {
+    id,
+    status: 'pending', // All new transactions start as pending
+    date: new Date(),
+    cashFlow,
+    ...data,
+  };
+  transactions.set(id, newTransaction);
+  console.log(`Transaction added with specific ID: ${id}, Total: ${transactions.size}`);
+  console.log('New transaction data:', JSON.stringify(newTransaction, null, 2));
+  return newTransaction;
+}
+
 export function updateTransaction(id: string, updateData: Partial<Omit<Transaction, 'id' | 'date'>>): Transaction | undefined {
     const transaction = transactions.get(id);
     if (!transaction) {

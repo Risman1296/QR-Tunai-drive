@@ -1,4 +1,9 @@
 import { ImageResponse } from 'next/og';
+import styles from './apple-icon.module.css';
+
+// Required for static export
+export const dynamic = 'force-static';
+export const revalidate = 0;
 
 export const size = {
   width: 180,
@@ -8,19 +13,8 @@ export const contentType = 'image/png';
 
 export default function AppleIcon() {
   return new ImageResponse(
-    (
       <div
-        style={{
-          fontSize: 24,
-          background: 'white',
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#2563eb',
-          borderRadius: 20,
-        }}
+        className={styles.iconContainer}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg" 
@@ -48,7 +42,7 @@ export default function AppleIcon() {
           <path d="m21 21l.01 0"/>
         </svg>
       </div>
-    ),
+    ,
     {
       ...size,
     },

@@ -1,5 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
+
+
+// Force dynamic untuk autentikasi
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface UserPayload {
   userId: string;

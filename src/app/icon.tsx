@@ -1,4 +1,9 @@
 import { ImageResponse } from 'next/og';
+import styles from './icon.module.css';
+
+// Required for static export
+export const dynamic = 'force-static';
+export const revalidate = 0;
 
 export const size = {
   width: 32,
@@ -8,22 +13,11 @@ export const contentType = 'image/png';
 
 export default function Icon() {
   return new ImageResponse(
-    (
       <div
-        style={{
-          fontSize: 24,
-          background: 'white',
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#2563eb',
-          borderRadius: 4,
-        }}
+        className={styles.iconContainer}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg" 
+      <svg
+        xmlns="http://www.w3.org/2000/svg" 
           width="24" 
           height="24" 
           viewBox="0 0 24 24" 
@@ -47,10 +41,9 @@ export default function Icon() {
           <path d="m21 17l.01 0"/>
           <path d="m21 21l.01 0"/>
         </svg>
-      </div>
-    ),
-    {
-      ...size,
-    },
-  );
+      </div>,
+      {
+        ...size,
+      }
+    )
 }

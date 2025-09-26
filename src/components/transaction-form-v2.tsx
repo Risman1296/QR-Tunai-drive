@@ -562,8 +562,8 @@ return (
 												</div>
 											)}
 											<div>
-												<FormLabel>ID Pelanggan / Nomor Pembayaran</FormLabel>
-												<Input placeholder="Contoh: 1234567890" />
+											<FormLabel>ID Pelanggan / Kode Pembayaran</FormLabel>
+											<Input placeholder="Masukkan nomor pelanggan atau kode bayar" />
 											</div>
 											<FormField
 												control={form.control}

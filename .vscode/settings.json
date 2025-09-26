@@ -124,5 +124,7 @@
         "**/bower_components": true,
         "**/*.code-search": true,
         "qrtunai-backend/": true
-    }
+    },
+    "chatgpt.openOnStartup": true,
+    "chatgpt.commentCodeLensEnabled": true
 }

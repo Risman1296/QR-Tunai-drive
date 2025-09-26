@@ -1,6 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import QRCode from 'qrcode';
+import { addTransactionWithId } from '@/lib/transaction-store';
+
+
+// Force static export untuk Cloudflare Pages
+export const dynamic = 'force-static';
+export const revalidate = 0;
 
 export async function POST(request: NextRequest) {
   try {
@@ -85,6 +91,24 @@ export async function POST(request: NextRequest) {
     } catch (qrError) {
       console.error('QR Code generation failed:', qrError);
       throw new Error(`QR code generation failed: ${qrError instanceof Error ? qrError.message : 'Unknown QR error'}`);
+    }
+    
+    // Create transaction record in the store with the same ID as the token
+    try {
+      const transaction = addTransactionWithId(tokenId, {
+        type: 'QRIS Payment', 
+        customerName: '', // Will be filled when customer submits form
+        amount: 0, // Will be filled when customer submits form  
+        method: 'qris',
+        notes: 'Generated from QR scan'
+      });
+      
+      console.log('Transaction record created with ID:', transaction.id);
+      
+    } catch (transactionError) {
+      console.error('Failed to create transaction record:', transactionError);
+      // Don't throw error here - QR generation should still work even if transaction creation fails
+      console.warn('Proceeding with QR generation despite transaction creation failure');
     }
     
     // Ensure consistent naming with client expectations

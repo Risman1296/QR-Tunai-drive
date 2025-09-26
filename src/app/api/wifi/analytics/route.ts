@@ -1,10 +1,14 @@
-/**
+﻿/**
  * WiFi Analytics API
  * Provides usage statistics and reports
  */
 
 import { NextResponse } from 'next/server';
 import { WiFiAnalytics } from '@/lib/wifi-manager';
+
+// Dynamic: analytics reflects latest usage
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET() {
   try {

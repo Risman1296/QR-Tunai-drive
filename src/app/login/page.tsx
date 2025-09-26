@@ -32,7 +32,9 @@ export default function LoginPage() {
     const checkAuth = async () => {
       try {
         const response = await fetch('/api/auth/me', {
-          signal: abortController.signal
+          signal: abortController.signal,
+          cache: 'no-store',
+          credentials: 'include',
         });
         
         if (response.ok) {
@@ -83,6 +85,8 @@ export default function LoginPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(credentials),
+        // Ensure cookies from the response are stored
+        credentials: 'include',
       });
 
       const data = await response.json();
@@ -92,12 +96,35 @@ export default function LoginPage() {
           title: 'Login Berhasil',
           description: `Selamat datang, ${data.user.name}!`,
         });
-        
-        // Wait a bit for cookie to be set, then redirect
+
+        // Confirm cookie/session is active before redirecting
+        // Try a quick check to /api/auth/me with a short timeout
+        try {
+          const controller = new AbortController();
+          const t = setTimeout(() => controller.abort(), 1500);
+          const meRes = await fetch('/api/auth/me', {
+            signal: controller.signal,
+            cache: 'no-store',
+            credentials: 'include',
+          });
+          clearTimeout(t);
+          if (!meRes.ok) {
+            // Fallback small delay if cookie not immediately readable
+            await new Promise(r => setTimeout(r, 300));
+          }
+        } catch {
+          // Ignore, proceed to redirect
+        }
+
+        // Use replace to avoid back navigation to login
+        router.replace('/dashboard');
+
+        // Fallback: if still on /login after a short delay, force navigation
         submitTimeoutRef.current = setTimeout(() => {
-          router.refresh(); // Refresh to pickup new cookies
-          router.push('/dashboard');
-        }, 100); // Kurangi delay untuk UX yang lebih baik
+          if (typeof window !== 'undefined' && window.location.pathname === '/login') {
+            window.location.assign('/dashboard');
+          }
+        }, 1000);
       } else {
         setError(data.error || 'Login gagal');
       }

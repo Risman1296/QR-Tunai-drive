@@ -71,6 +71,7 @@ interface BankAccount {
   accountType: 'current' | 'savings' | 'escrow';
   dailyLimit: number;
   monthlyLimit: number;
+  integrationId?: string;
 }
 
 interface QrisAccount {
@@ -102,9 +103,18 @@ interface BankCodes {
   };
 }
 
+interface BankIntegration {
+  id: string;
+  bankName: string;
+  bankCode: string;
+  provider: string;
+  description?: string;
+}
+
 const PaymentAccountSettings = () => {
   const [config, setConfig] = useState<PaymentConfiguration | null>(null);
   const [bankCodes, setBankCodes] = useState<BankCodes>({});
+  const [integrations, setIntegrations] = useState<BankIntegration[]>([]);
   const [loading, setLoading] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingAccount, setEditingAccount] = useState<any>(null);
@@ -122,6 +132,7 @@ const PaymentAccountSettings = () => {
     accountTypeBank: 'savings' as 'current' | 'savings' | 'escrow',
     dailyLimit: 500000000,
     monthlyLimit: 10000000000,
+    integrationId: '',
     // QRIS fields
     merchantId: '',
     merchantName: '',
@@ -146,6 +157,7 @@ const PaymentAccountSettings = () => {
       if (response.ok) {
         setConfig(result.data);
         setBankCodes(result.bankCodes);
+        setIntegrations(result.data?.bankIntegrations ?? []);
       } else {
         toast({
           title: 'Error',
@@ -193,7 +205,8 @@ const PaymentAccountSettings = () => {
           accountType: formData.accountTypeBank,
           dailyLimit: formData.dailyLimit,
           monthlyLimit: formData.monthlyLimit,
-          isActive: formData.isActive
+          isActive: formData.isActive,
+          integrationId: formData.integrationId || undefined
         } : {
           merchantId: formData.merchantId,
           merchantName: formData.merchantName,
@@ -359,6 +372,7 @@ const PaymentAccountSettings = () => {
       branchName: '',
       branchCode: '',
       accountTypeBank: 'savings',
+      integrationId: '',
       dailyLimit: 500000000,
       monthlyLimit: 10000000000,
       merchantId: '',
@@ -476,6 +490,29 @@ const PaymentAccountSettings = () => {
                           </SelectContent>
                         </Select>
                       </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="integrationId">Integrasi Realtime (Opsional)</Label>
+                      <Select
+                        value={formData.integrationId}
+                        onValueChange={(value) => setFormData({...formData, integrationId: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={integrations.length ? 'Pilih integrasi' : 'Belum ada integrasi'} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {integrations.length === 0 ? (
+                            <SelectItem value="" disabled>Tambah integrasi di tab pengaturan</SelectItem>
+                          ) : (
+                            integrations.map((integration) => (
+                              <SelectItem key={integration.id} value={integration.id}>
+                                {integration.bankName} ({integration.provider})
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">Diwajibkan untuk saldo realtime. Kosongkan jika akun ini belum menggunakan API.</p>
                     </div>
 
                     <div className="space-y-2">

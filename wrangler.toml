@@ -1,0 +1,6 @@
+name = "qr-tunai-app"
+compatibility_date = "2024-09-25"
+pages_build_output_dir = ".vercel/output/static"
+
+[env.production]
+# Environment variables untuk production

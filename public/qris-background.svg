@@ -1,0 +1,161 @@
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Main background gradient -->
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#1e293b;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#334155;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- QRIS service gradients -->
+    <linearGradient id="qris-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#1e40af;stop-opacity:0.6" />
+    </linearGradient>
+    
+    <linearGradient id="qris-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#0891b2;stop-opacity:0.6" />
+    </linearGradient>
+    
+    <linearGradient id="qris-green" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:0.6" />
+    </linearGradient>
+    
+    <!-- Pattern overlay -->
+    <pattern id="tech-pattern" patternUnits="userSpaceOnUse" width="60" height="60">
+      <circle cx="30" cy="30" r="1" fill="#475569" opacity="0.3"/>
+      <circle cx="10" cy="10" r="0.5" fill="#64748b" opacity="0.2"/>
+      <circle cx="50" cy="20" r="0.5" fill="#64748b" opacity="0.2"/>
+      <circle cx="20" cy="50" r="0.5" fill="#64748b" opacity="0.2"/>
+    </pattern>
+  </defs>
+  
+  <!-- Main background -->
+  <rect width="100%" height="100%" fill="url(#bg-gradient)"/>
+  <rect width="100%" height="100%" fill="url(#tech-pattern)"/>
+  
+  <!-- Central QRIS smartphone illustration -->
+  <g transform="translate(1200,200)">
+    <!-- Phone shadow -->
+    <rect x="5" y="5" width="180" height="320" rx="25" fill="rgba(0,0,0,0.3)" opacity="0.5"/>
+    <!-- Phone body -->
+    <rect x="0" y="0" width="180" height="320" rx="25" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+    <!-- Screen -->
+    <rect x="15" y="30" width="150" height="260" rx="15" fill="#0f172a"/>
+    <!-- QR Code area -->
+    <rect x="40" y="80" width="100" height="100" rx="8" fill="white"/>
+    <!-- QR Code pattern -->
+    <g fill="black">
+      <rect x="45" y="85" width="12" height="12"/>
+      <rect x="60" y="85" width="12" height="12"/>
+      <rect x="75" y="85" width="12" height="12"/>
+      <rect x="133" y="85" width="12" height="12"/>
+      
+      <rect x="45" y="100" width="12" height="12"/>
+      <rect x="133" y="100" width="12" height="12"/>
+      
+      <rect x="45" y="115" width="12" height="12"/>
+      <rect x="60" y="115" width="12" height="12"/>
+      <rect x="75" y="115" width="12" height="12"/>
+      <rect x="133" y="115" width="12" height="12"/>
+      
+      <rect x="45" y="153" width="12" height="12"/>
+      <rect x="60" y="153" width="12" height="12"/>
+      <rect x="75" y="153" width="12" height="12"/>
+      <rect x="133" y="153" width="12" height="12"/>
+      
+      <rect x="45" y="168" width="12" height="12"/>
+      <rect x="133" y="168" width="12" height="12"/>
+    </g>
+    <!-- QRIS logo text -->
+    <text x="90" y="210" text-anchor="middle" fill="#06b6d4" font-family="Arial Black" font-size="16" font-weight="bold">QRIS</text>
+    <text x="90" y="230" text-anchor="middle" fill="#94a3b8" font-family="Arial" font-size="10">Quick Response</text>
+    <text x="90" y="245" text-anchor="middle" fill="#94a3b8" font-family="Arial" font-size="10">Indonesian Standard</text>
+  </g>
+  
+  <!-- Hexagonal service icons around the phone -->
+  <!-- QRIS Central -->
+  <g transform="translate(100,150)">
+    <polygon points="60,0 140,0 180,69 140,138 60,138 20,69" fill="url(#qris-blue)" stroke="#3b82f6" stroke-width="3" opacity="0.9"/>
+    <text x="100" y="65" text-anchor="middle" fill="white" font-family="Arial Black" font-size="14" font-weight="bold">QRIS</text>
+    <text x="100" y="85" text-anchor="middle" fill="#ddd6fe" font-family="Arial" font-size="10">Payment</text>
+  </g>
+  
+  <!-- Tarik Tunai -->
+  <g transform="translate(250,350)">
+    <polygon points="50,0 120,0 155,60 120,120 50,120 15,60" fill="url(#qris-cyan)" stroke="#06b6d4" stroke-width="3" opacity="0.8"/>
+    <text x="85" y="55" text-anchor="middle" fill="white" font-family="Arial" font-size="12" font-weight="bold">Tarik</text>
+    <text x="85" y="70" text-anchor="middle" fill="white" font-family="Arial" font-size="12" font-weight="bold">Tunai</text>
+  </g>
+  
+  <!-- Transfer -->
+  <g transform="translate(450,200)">
+    <polygon points="50,0 120,0 155,60 120,120 50,120 15,60" fill="url(#qris-green)" stroke="#10b981" stroke-width="3" opacity="0.8"/>
+    <rect x="70" y="45" width="30" height="20" rx="3" fill="white" opacity="0.9"/>
+    <text x="85" y="80" text-anchor="middle" fill="white" font-family="Arial" font-size="11" font-weight="bold">Transfer</text>
+  </g>
+  
+  <!-- Pembayaran -->
+  <g transform="translate(150,550)">
+    <polygon points="50,0 120,0 155,60 120,120 50,120 15,60" fill="rgba(99,102,241,0.8)" stroke="#6366f1" stroke-width="3" opacity="0.8"/>
+    <circle cx="85" cy="45" r="12" fill="white" opacity="0.9"/>
+    <text x="85" y="80" text-anchor="middle" fill="white" font-family="Arial" font-size="10" font-weight="bold">Pembayaran</text>
+  </g>
+  
+  <!-- Additional service icons -->
+  <g transform="translate(600,400)">
+    <polygon points="40,0 100,0 130,52 100,104 40,104 10,52" fill="rgba(168,85,247,0.7)" stroke="#a855f7" stroke-width="2" opacity="0.7"/>
+    <text x="70" y="48" text-anchor="middle" fill="white" font-family="Arial" font-size="9" font-weight="bold">Top Up</text>
+    <text x="70" y="62" text-anchor="middle" fill="white" font-family="Arial" font-size="9" font-weight="bold">E-Wallet</text>
+  </g>
+  
+  <!-- Background tech elements -->
+  <g opacity="0.15">
+    <circle cx="1600" cy="300" r="120" fill="#3b82f6"/>
+    <circle cx="1700" cy="500" r="80" fill="#06b6d4"/>
+    <circle cx="1500" cy="700" r="100" fill="#10b981"/>
+    <circle cx="800" cy="800" r="60" fill="#6366f1"/>
+    <circle cx="200" cy="900" r="40" fill="#8b5cf6"/>
+  </g>
+  
+  <!-- Connecting network lines -->
+  <g stroke="#475569" stroke-width="1.5" opacity="0.4" fill="none">
+    <line x1="280" y1="220" x2="520" y2="260"/>
+    <line x1="370" y1="410" x2="570" y2="340"/>
+    <line x1="220" y1="620" x2="320" y2="470"/>
+    <line x1="1200" y1="360" x2="650" y2="450"/>
+    <line x1="180" y1="220" x2="280" y2="410"/>
+  </g>
+  
+  <!-- Data flow lines with gradient -->
+  <defs>
+    <linearGradient id="flow-gradient">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0"/>
+      <stop offset="50%" style="stop-color:#06b6d4;stop-opacity:0.8"/>
+      <stop offset="100%" style="stop-color:#10b981;stop-opacity:0"/>
+    </linearGradient>
+  </defs>
+  <g stroke="url(#flow-gradient)" stroke-width="2" fill="none" opacity="0.6">
+    <path d="M 280 150 Q 400 100 520 150"/>
+    <path d="M 370 350 Q 500 300 630 350"/>
+    <path d="M 1200 200 Q 1000 100 800 200"/>
+  </g>
+  
+  <!-- Subtle grid overlay -->
+  <defs>
+    <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+      <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#475569" stroke-width="0.5" opacity="0.1"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+  
+  <!-- Hand illustration suggestion (simplified) -->
+  <g transform="translate(1000,400)" opacity="0.6">
+    <ellipse cx="0" cy="50" rx="80" ry="30" fill="rgba(120,113,108,0.3)"/>
+    <rect x="-20" y="30" width="40" height="60" rx="20" fill="rgba(120,113,108,0.4)"/>
+    <circle cx="0" cy="20" r="15" fill="rgba(120,113,108,0.4)"/>
+  </g>
+</svg>

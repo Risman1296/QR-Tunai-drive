@@ -18,7 +18,7 @@ import WiFiAccess, { WiFiQuickConnect } from "@/components/wifi-access";
 import { WiFiManager, WiFiCredentials, ConnectionQuality } from "@/lib/wifi-manager";
 import Link from "next/link";
 import { useState, Suspense } from "react";
-import { Loader2, Copy, CheckCircle, Store } from "lucide-react";
+import { Loader2, Copy, CheckCircle, Store, CreditCard, Banknote, Car } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 
 // Data options - Updated dengan bank Indonesia standar
@@ -133,6 +133,13 @@ const parseRupiahValue = (value: string): number => {
   return parseInt(numericValue) || 0;
 };
 
+const formatAmountInput = (value: number | string | null | undefined) => {
+  if (value === null || value === undefined) return '';
+  const numeric = typeof value === 'number' ? value : parseRupiahValue(value);
+  if (!numeric) return '';
+  return 'Rp ' + numeric.toLocaleString('id-ID');
+};
+
 // Schema validasi form - Updated dengan validasi yang lebih ketat
 const formSchema = z.object({
 	type: z.string().min(1, "Pilih jenis transaksi"),
@@ -146,41 +153,25 @@ const formSchema = z.object({
 			message: "Nomor rekening hanya boleh berisi angka"
 		}),
 	customerName: z.string().min(2, "Nama minimal 2 karakter").max(100, "Nama maksimal 100 karakter"),
-	amount: z.union([
-		z.number().min(10000, "Nominal minimal Rp10.000").max(10000000, "Nominal maksimal 10 juta"),
-		z.string().transform((val, ctx) => {
-			if (!val || val.trim() === "") {
-				ctx.addIssue({
-					code: z.ZodIssueCode.custom,
-					message: "Nominal wajib diisi"
-				});
-				return z.NEVER;
+	amount: z.preprocess((raw) => {
+		if (typeof raw === 'number') {
+			return raw;
+		}
+		if (typeof raw === 'string') {
+			const trimmed = raw.trim();
+			if (!trimmed) {
+				return undefined;
 			}
-			const numericValue = parseRupiahValue(val);
-			if (isNaN(numericValue) || numericValue <= 0) {
-				ctx.addIssue({
-					code: z.ZodIssueCode.custom,
-					message: "Nominal harus berupa angka yang valid"
-				});
-				return z.NEVER;
+			if (!/\d/.test(trimmed)) {
+				return NaN;
 			}
-			if (numericValue < 10000) {
-				ctx.addIssue({
-					code: z.ZodIssueCode.custom,
-					message: "Nominal minimal Rp10.000"
-				});
-				return z.NEVER;
-			}
-			if (numericValue > 10000000) {
-				ctx.addIssue({
-					code: z.ZodIssueCode.custom,
-					message: "Nominal maksimal 10 juta"
-				});
-				return z.NEVER;
-			}
-			return numericValue;
-		})
-	]),
+			return parseRupiahValue(trimmed);
+		}
+		return undefined;
+	}, z.number({ required_error: 'Jumlah transaksi wajib diisi' })
+		.refine((val) => Number.isFinite(val) && !Number.isNaN(val), { message: 'Jumlah harus berupa angka yang valid' })
+		.refine((val) => val >= 10000, { message: 'Jumlah transaksi minimum Rp 10.000' })
+		.refine((val) => val <= 10000000, { message: 'Jumlah transaksi maksimum Rp 10.000.000' })),
 	notes: z.string().optional(),
 	ewallet: z.string().optional(),
 	phone: z.string()
@@ -195,7 +186,7 @@ const formSchema = z.object({
 		// Check if QRIS method is being used - this would need to be passed through context
 		ctx.addIssue({
 			code: z.ZodIssueCode.custom,
-			message: "Untuk QRIS, nominal maksimal Rp1.000.000",
+			message: "Maksimum penarikan tunai melalui QRIS adalah Rp 1.000.000",
 			path: ["amount"]
 		});
 	}
@@ -207,6 +198,10 @@ export default function TransactionForm() {
 	const params = useParams();
 	const router = useRouter();
 	const tokenId = params?.id as string;
+
+	// If component is rendered without a token param (e.g. /transaction page),
+	// operate in standalone mode: don't validate/redirect and create new transactions.
+	const [isStandalone, setIsStandalone] = useState(false);
 	
 	// State untuk token validation
 	const [tokenValid, setTokenValid] = useState<boolean | null>(null);
@@ -221,14 +216,23 @@ export default function TransactionForm() {
 	const [wifiConnected, setWiFiConnected] = useState(false);
 
 	// TESTING MODE: Force WiFi display
-	const FORCE_WIFI_FOR_TESTING = true; // Set to false in production
+	const FORCE_WIFI_FOR_TESTING = false; // Set to false in production
 
 	// Set up form
 	const form = useForm<FormValues>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			type: "",
+			bank: "",
+			manualBankName: "",
+			manualPaymentType: "",
+			paymentInstitution: "",
+			accountNumber: "",
+			customerName: "",
 			amount: 0,
+			notes: "",
+			ewallet: "",
+			phone: "",
 			verification: false,
 		},
 	});
@@ -313,12 +317,12 @@ export default function TransactionForm() {
 	// Token validation - Pastikan form hanya bisa diakses melalui QR code yang valid
 	React.useEffect(() => {
 		if (!tokenId) {
-			setTokenError("Token tidak ditemukan. Silakan akses melalui QR code.");
-			setTokenValid(false);
-			// Redirect to main page after 3 seconds
-			setTimeout(() => {
-				router.push("/");
-			}, 3000);
+			// No token provided - this is likely the generic /transaction page.
+			// Do not treat this as an error. Enable standalone mode so the form
+			// can be used without a pre-created token.
+			setIsStandalone(true);
+			setTokenValid(true);
+			setTokenError("");
 			return;
 		}
 
@@ -435,20 +439,18 @@ export default function TransactionForm() {
 		setIsSubmitting(true);
 		
 		try {
-			const res = await fetch("/api/transactions", {
-				method: "POST",
+			// If running in standalone mode, create a new transaction (POST).
+			// Otherwise update the existing transaction tied to the token (PUT).
+			const endpoint = isStandalone ? `/api/transactions` : `/api/transactions/${tokenId}`;
+			const method = isStandalone ? 'POST' : 'PUT';
+			const res = await fetch(endpoint, {
+				method,
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					...values,
-					tokenId: tokenId, // Sertakan tokenId untuk tracking
-					transactionId: transactionId,
-					// Include UI state untuk detail info ke admin
-					transferMethod: transferMethod || null,
-					tarikMethod: tarikMethod || null,
-					paymentType: paymentType || null,
-					manualPaymentType: manualPaymentType || null,
-					manualBankName: manualBankName || null,
-					paymentInstitution: paymentInstitution || null,
+					customerName: values.customerName,
+					amount: values.amount,
+					// include tokenId when available for PUT / tracking
+					...(tokenId ? { tokenId } : {}),
 				}),
 			});
 			
@@ -464,7 +466,7 @@ export default function TransactionForm() {
 			const data = await res.json();
 			setSubmitStatus({ 
 				type: 'success', 
-				message: `✅ Transaksi berhasil! ID: ${data.id}`
+				message: isStandalone ? `✅ Transaksi berhasil! ID: ${data.id || '—'}` : `✅ Transaksi berhasil! ID: ${data.id}`
 			});
 			form.reset();
 			
@@ -484,21 +486,25 @@ export default function TransactionForm() {
 				sessionStorage.setItem('accessedTokens', JSON.stringify(updatedTokens));
 			}
 
-			// Start redirect countdown for security
-			setIsRedirecting(true);
-			setCountdown(5);
-			
-			const countdownInterval = setInterval(() => {
-				setCountdown((prev) => {
-					if (prev <= 1) {
-						clearInterval(countdownInterval);
-						// Use router.push for safer navigation
-						router.push("/");
-						return 0;
-					}
-					return prev - 1;
-				});
-			}, 1000);
+			// Start redirect countdown for security when token-based. For standalone,
+			// navigate back to /transaction after a short delay so user can see success.
+			if (!isStandalone) {
+				setIsRedirecting(true);
+				setCountdown(5);
+				const countdownInterval = setInterval(() => {
+					setCountdown((prev) => {
+						if (prev <= 1) {
+							clearInterval(countdownInterval);
+							// Use router.push for safer navigation
+							router.push("/");
+							return 0;
+						}
+						return prev - 1;
+					});
+				}, 1000);
+			} else {
+				setTimeout(() => router.push('/transaction'), 2000);
+			}
 		} catch (e) {
 			setSubmitStatus({ 
 				type: 'error', 
@@ -567,7 +573,7 @@ export default function TransactionForm() {
 									ID: {transactionId.slice(-8)}
 								</span>
 								<span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full font-medium">
-									🚗 Drive-Thru
+									<span className="inline-flex items-center gap-1"><Car className="h-4 w-4" /> Drive-Thru</span>
 								</span>
 							</div>
 						</div>
@@ -621,15 +627,21 @@ export default function TransactionForm() {
 										<FormLabel className="text-sm font-medium text-gray-700">Jenis Transaksi</FormLabel>
 										<Select onValueChange={field.onChange} defaultValue={field.value}>
 											<FormControl>
-												<SelectTrigger className="h-12 text-base border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 rounded-xl bg-gray-50/50">
+                                    <SelectTrigger className="h-12 text-base rounded-2xl border border-transparent bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md shadow-[0_0_0_1px_rgba(59,130,246,.25),0_8px_20px_-6px_rgba(59,130,246,.35)] hover:shadow-[0_0_0_1px_rgba(59,130,246,.35),0_12px_28px_-6px_rgba(59,130,246,.45)] focus:ring-2 focus:ring-qr-blue-400/50 focus:outline-none transition-all duration-200">
 													<SelectValue placeholder="Pilih jenis transaksi" />
 												</SelectTrigger>
 											</FormControl>
-											<SelectContent className="rounded-xl border-gray-200">
-												{transactionTypes.map((type) => (
-													<SelectItem key={type.value} value={type.value} className="text-base py-3">{type.label}</SelectItem>
-												))}
-											</SelectContent>
+                                    <SelectContent className="rounded-2xl border border-white/20 bg-white/60 backdrop-blur-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,.25)]">
+                                        {transactionTypes.map((type) => (
+                                            <SelectItem
+                                                key={type.value}
+                                                value={type.value}
+                                                className="text-base py-3 rounded-xl data-[highlighted]:bg-gradient-to-r data-[highlighted]:from-qr-blue-500/10 data-[highlighted]:to-qr-yellow-400/10 data-[highlighted]:text-foreground transition-colors"
+                                            >
+                                                {type.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
 										</Select>
 										<FormMessage />
 									</FormItem>
@@ -639,7 +651,10 @@ export default function TransactionForm() {
 							{/* E-Wallet Fields - Mobile Optimized */}
 							{isEWallet && (
 								<div className="space-y-3 p-3 bg-blue-50/30 rounded-xl border border-blue-100/50 animate-fade-in">
-									<Badge variant="secondary" className="text-xs px-2 py-1 bg-blue-100 text-blue-800 border-0">💳 Top Up E-Wallet</Badge>
+									<Badge variant="secondary" className="text-xs px-2 py-1 bg-blue-100 text-blue-800 border-0 flex items-center gap-1">
+										<CreditCard className="h-3.5 w-3.5" />
+										<span>Top Up E-Wallet</span>
+									</Badge>
 									<FormField
 										control={form.control}
 										name="ewallet"
@@ -672,8 +687,11 @@ export default function TransactionForm() {
 													<Input 
 														type="tel" 
 														inputMode="numeric"
-														placeholder="08xxxxxxxxxx" 
-														{...field}
+														placeholder="08xxxxxxxxxx"
+														value={field.value || ""}
+														onChange={field.onChange}
+														onBlur={field.onBlur}
+														name={field.name}
 														className="h-12 text-base border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 rounded-xl bg-white"
 													/>
 												</FormControl>
@@ -693,16 +711,15 @@ export default function TransactionForm() {
 														inputMode="numeric"
 														pattern="[0-9]*"
 														placeholder="Rp 0" 
-														value={field.value ? formatRupiah(field.value) : ""}
-														onChange={(e) => {
-															const numericValue = parseRupiahValue(e.target.value);
-															field.onChange(numericValue);
-														}}
+													value={formatAmountInput(field.value)}
+													onChange={(e) => {
+														field.onChange(parseRupiahValue(e.target.value));
+													}}
 														className="h-12 text-base border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 rounded-xl bg-white"
 													/>
 												</FormControl>
 												<FormDescription className="text-xs text-gray-500">
-													Nominal minimal Rp10.000, maksimal 10 juta
+													Masukkan jumlah transaksi (minimal Rp 10.000, maksimum Rp 10.000.000)
 												</FormDescription>
 												<FormMessage />
 											</FormItem>
@@ -726,7 +743,10 @@ export default function TransactionForm() {
 							{/* Transfer Fields - Mobile Optimized */}
 							{isTransfer && (
 								<div className="space-y-3 p-3 bg-green-50/30 rounded-xl border border-green-100/50 animate-fade-in">
-									<Badge variant="secondary" className="text-xs px-2 py-1 bg-green-100 text-green-800 border-0">💸 Transfer Bank</Badge>
+									<Badge variant="secondary" className="text-xs px-2 py-1 bg-green-100 text-green-800 border-0 flex items-center gap-1">
+										<Banknote className="h-3.5 w-3.5" />
+										<span>Transfer Bank</span>
+									</Badge>
 									
 									{/* Metode Transfer - Mobile Optimized */}
 									<div className="space-y-2">
@@ -750,8 +770,15 @@ export default function TransactionForm() {
 										{transferMethod && (
 											<div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-xl">
 												<p className="text-sm text-blue-700 font-medium leading-relaxed">
-													{transferMethod === "tunai" && "💰 Transfer akan dilakukan dengan uang tunai ke rekening tujuan"}
-													{transferMethod === "transfer_atm_edc" && "💳 Transfer menggunakan ATM/Mesin EDC untuk proses yang lebih cepat"}
+                                                {transferMethod === "tunai" && (
+                                                  <span className="inline-flex items-center gap-1">
+                                                    <Banknote className="h-3.5 w-3.5" />
+                                                    Transfer akan dilakukan dengan uang tunai ke rekening tujuan
+                                                  </span>
+                                                )}
+													{transferMethod === "transfer_atm_edc" && (
+														<span className="inline-flex items-center gap-1"><CreditCard className="h-3.5 w-3.5" />Transfer menggunakan ATM/Mesin EDC untuk proses yang lebih cepat</span>
+													)}
 												</p>
 											</div>
 										)}
@@ -794,9 +821,10 @@ export default function TransactionForm() {
 													<FormLabel>Nama Bank</FormLabel>
 													<FormControl>
 														<Input 
-															{...field}
 															placeholder="Masukkan nama bank" 
 															className="text-base"
+															name={field.name}
+															onBlur={field.onBlur}
 															value={manualBankName}
 															onChange={(e) => {
 																field.onChange(e.target.value);
@@ -818,7 +846,10 @@ export default function TransactionForm() {
 												<FormLabel>Nomor Rekening</FormLabel>
 												<FormControl>
 													<Input 
-														{...field}
+														value={field.value || ""}
+														onChange={field.onChange}
+														onBlur={field.onBlur}
+														name={field.name}
 														inputMode="numeric"
 														pattern="[0-9]*"
 														placeholder="Masukkan nomor rekening" 
@@ -836,7 +867,14 @@ export default function TransactionForm() {
 											<FormItem>
 												<FormLabel>Nama Penerima</FormLabel>
 												<FormControl>
-													<Input type="text" placeholder="Masukkan nama penerima" {...field} />
+													<Input 
+														type="text" 
+														placeholder="Masukkan nama penerima" 
+														value={field.value || ""}
+														onChange={field.onChange}
+														onBlur={field.onBlur}
+														name={field.name}
+													/>
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -854,16 +892,15 @@ export default function TransactionForm() {
 														inputMode="numeric"
 														pattern="[0-9]*"
 														placeholder="Rp 0" 
-														value={field.value ? formatRupiah(field.value) : ""}
-														onChange={(e) => {
-															const numericValue = parseRupiahValue(e.target.value);
-															field.onChange(numericValue);
-														}}
+													value={formatAmountInput(field.value)}
+													onChange={(e) => {
+														field.onChange(parseRupiahValue(e.target.value));
+													}}
 														className="h-12 text-base border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 rounded-xl bg-white"
 													/>
 												</FormControl>
 												<FormDescription>
-													Nominal minimal Rp10.000, maksimal 10 juta
+													Masukkan jumlah transfer (minimal Rp 10.000, maksimum Rp 10.000.000)
 												</FormDescription>
 												<FormMessage />
 											</FormItem>
@@ -992,7 +1029,14 @@ export default function TransactionForm() {
 											<FormItem>
 												<FormLabel>Nama</FormLabel>
 												<FormControl>
-													<Input type="text" placeholder="Masukkan nama Anda" {...field} />
+													<Input 
+														type="text" 
+														placeholder="Masukkan nama Anda" 
+														value={field.value || ""}
+														onChange={field.onChange}
+														onBlur={field.onBlur}
+														name={field.name}
+													/>
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -1011,16 +1055,15 @@ export default function TransactionForm() {
 														inputMode="numeric"
 														pattern="[0-9]*"
 														placeholder="Rp 0" 
-														value={field.value ? formatRupiah(field.value) : ""}
-														onChange={(e) => {
-															const numericValue = parseRupiahValue(e.target.value);
-															field.onChange(numericValue);
-														}}
+													value={formatAmountInput(field.value)}
+													onChange={(e) => {
+														field.onChange(parseRupiahValue(e.target.value));
+													}}
 														className="h-12 text-base border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 rounded-xl bg-white"
 													/>
 												</FormControl>
 												<FormDescription>
-													{tarikMethod === "qris" ? "Maksimal Rp1.000.000 untuk QRIS" : "Nominal minimal Rp10.000, maksimal 10 juta"}
+													{tarikMethod === "qris" ? "Maksimum penarikan tunai melalui QRIS adalah Rp 1.000.000" : "Masukkan jumlah penarikan (minimal Rp 10.000, maksimum Rp 10.000.000)"}
 												</FormDescription>
 												<FormMessage />
 											</FormItem>
@@ -1034,7 +1077,13 @@ export default function TransactionForm() {
 											<FormItem>
 												<FormLabel>Catatan</FormLabel>
 												<FormControl>
-													<Textarea placeholder="Catatan tambahan (opsional)" {...field} />
+													<Textarea 
+														placeholder="Catatan tambahan (opsional)" 
+														value={field.value || ""}
+														onChange={field.onChange}
+														onBlur={field.onBlur}
+														name={field.name}
+													/>
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -1084,9 +1133,10 @@ export default function TransactionForm() {
 													<FormLabel>Nama Bank</FormLabel>
 													<FormControl>
 														<Input 
-															{...field}
 															placeholder="Masukkan nama bank" 
 															className="text-base"
+															name={field.name}
+															onBlur={field.onBlur}
 															value={manualBankName}
 															onChange={(e) => {
 																field.onChange(e.target.value);
@@ -1107,7 +1157,14 @@ export default function TransactionForm() {
 											<FormItem>
 												<FormLabel>Nomor Rekening</FormLabel>
 												<FormControl>
-													<Input type="text" placeholder="Masukkan nomor rekening" {...field} />
+													<Input 
+														type="text" 
+														placeholder="Masukkan nomor rekening" 
+														value={field.value || ""}
+														onChange={field.onChange}
+														onBlur={field.onBlur}
+														name={field.name}
+													/>
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -1120,7 +1177,14 @@ export default function TransactionForm() {
 											<FormItem>
 												<FormLabel>Nama Pemilik Rekening</FormLabel>
 												<FormControl>
-													<Input type="text" placeholder="Masukkan nama pemilik rekening" {...field} />
+													<Input 
+														type="text" 
+														placeholder="Masukkan nama pemilik rekening" 
+														value={field.value || ""}
+														onChange={field.onChange}
+														onBlur={field.onBlur}
+														name={field.name}
+													/>
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -1138,16 +1202,15 @@ export default function TransactionForm() {
 														inputMode="numeric"
 														pattern="[0-9]*"
 														placeholder="Rp 0" 
-														value={field.value ? formatRupiah(field.value) : ""}
-														onChange={(e) => {
-															const numericValue = parseRupiahValue(e.target.value);
-															field.onChange(numericValue);
-														}}
+													value={formatAmountInput(field.value)}
+													onChange={(e) => {
+														field.onChange(parseRupiahValue(e.target.value));
+													}}
 														className="h-12 text-base border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 rounded-xl bg-white"
 													/>
 												</FormControl>
 												<FormDescription>
-													Nominal minimal Rp10.000, maksimal 10 juta
+													Masukkan jumlah setor tunai (minimal Rp 10.000, maksimum Rp 10.000.000)
 												</FormDescription>
 												<FormMessage />
 											</FormItem>
@@ -1207,21 +1270,22 @@ export default function TransactionForm() {
 											name="paymentInstitution"
 											render={({ field }) => (
 												<FormItem>
-													<FormLabel>
-														{paymentType === "angsuran" && "Nama Lembaga Pembiayaan"}
-														{paymentType === "virtual_account" && "Nama Bank Virtual Account"}
-														{paymentType === "tagihan_bulanan" && "Nama Instansi/Perusahaan"}
-														{paymentType === "lainnya" && "Nama Instansi"}
-													</FormLabel>
+												<FormLabel>
+													{paymentType === "angsuran" && "Nama Lembaga Pembiayaan"}
+													{paymentType === "virtual_account" && "Nama Penyedia Virtual Account"}
+													{paymentType === "tagihan_bulanan" && "Nama Instansi/Perusahaan"}
+													{paymentType === "lainnya" && "Nama Penyedia Layanan"}
+													{!paymentType && "Nama Penyedia Layanan"}
+												</FormLabel>
 													<FormControl>
 														<Input 
 															className="h-12 text-base border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 rounded-xl bg-white"
 															type="text"
 															placeholder={
-																paymentType === "angsuran" ? "Contoh: ADIRA Finance, WOM Finance, BAF" :
-																paymentType === "virtual_account" ? "Contoh: VA BRI, VA BCA, VA Mandiri" :
-																paymentType === "tagihan_bulanan" ? "Contoh: PDAM, PLN, Telkom, PDAM Tirta" :
-																"Masukkan nama instansi"
+																paymentType === "angsuran" ? "Contoh: Adira Finance, WOM Finance" :
+																paymentType === "virtual_account" ? "Contoh: PLN Virtual Account, BPJS Virtual Account" :
+																paymentType === "tagihan_bulanan" ? "Contoh: PLN, PDAM, Telkom" :
+																"Masukkan nama penyedia layanan"
 															}
 															value={paymentInstitution}
 															onChange={(e) => {
@@ -1237,12 +1301,11 @@ export default function TransactionForm() {
 									)}
 
 									<div>
-										<FormLabel>ID Pelanggan / Nomor Pembayaran</FormLabel>
+										<FormLabel>ID Pelanggan / Kode Pembayaran</FormLabel>
 										<Input 
 											className="text-base"
 											type="text"
-											inputMode="numeric"
-											placeholder="Contoh: 1234567890" 
+											placeholder="Masukkan nomor pelanggan atau kode bayar" 
 										/>
 									</div>
 
@@ -1259,15 +1322,14 @@ export default function TransactionForm() {
 														inputMode="numeric"
 														pattern="[0-9]*"
 														placeholder="Rp 0" 
-														value={field.value ? formatRupiah(field.value) : ""}
-														onChange={(e) => {
-															const numericValue = parseRupiahValue(e.target.value);
-															field.onChange(numericValue);
-														}}
+													value={formatAmountInput(field.value)}
+													onChange={(e) => {
+														field.onChange(parseRupiahValue(e.target.value));
+													}}
 													/>
 												</FormControl>
 												<FormDescription>
-													Nominal minimal Rp10.000, maksimal 10 juta
+													Masukkan jumlah pembayaran (minimal Rp 10.000, maksimum Rp 10.000.000)
 												</FormDescription>
 												<FormMessage />
 											</FormItem>
@@ -1285,7 +1347,14 @@ export default function TransactionForm() {
 										<FormItem>
 											<FormLabel>Nama Customer</FormLabel>
 											<FormControl>
-												<Input type="text" placeholder="Masukkan nama customer" {...field} />
+												<Input 
+													type="text" 
+													placeholder="Masukkan nama customer" 
+													value={field.value || ""}
+													onChange={field.onChange}
+													onBlur={field.onBlur}
+													name={field.name}
+												/>
 											</FormControl>
 											<FormMessage />
 										</FormItem>

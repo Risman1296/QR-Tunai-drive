@@ -1,0 +1,37 @@
+# Example Environment Variables for Cloudflare Pages
+# Copy these into Pages → Project → Settings → Environment variables
+
+# Core app
+NODE_ENV=production
+JWT_SECRET=replace-with-strong-secret
+NEXT_PUBLIC_BASE_URL=https://your-domain.example
+NEXT_PUBLIC_APP_URL=https://your-domain.example
+BASE_URL=https://your-domain.example
+CSP_ORIGIN=https://your-domain.example
+
+# Cookies/Security
+SECURE_COOKIES=true
+SAME_SITE=lax
+
+# Disable Node cron/routers on Pages
+ENABLE_WIFI_AUTOMATION=false
+START_WIFI_AUTOMATION=false
+
+# BRI API (Sandbox defaults shown)
+BRI_BASE_URL=https://sandbox.partner.api.bri.co.id
+BRI_CLIENT_ID=
+BRI_CLIENT_SECRET=
+BRI_API_SECRET=
+BRI_PARTNER_ID=
+BRI_TOKEN_PATH=/oauth/client_credential/accesstoken
+BRI_BALANCE_PATH=/v2/accounts/{accountNumber}/balance
+BRI_TRANSACTIONS_PATH=/v2/accounts/{accountNumber}/transactions
+
+# BCA SNAP (optional)
+BCA_CLIENT_ID=
+BCA_CLIENT_SECRET=
+BCA_API_SECRET=
+BCA_BASE_URL=https://sandbox.bca.co.id
+BCA_CHANNEL_ID=
+BCA_QRIS_PATH=/openapi/v1.0/qris-mpm
+

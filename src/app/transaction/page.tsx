@@ -8,7 +8,7 @@ import { QrCode } from "lucide-react"
 
 function TransactionPageContents() {
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-background flex flex-col">
+    <div className="min-h-[100dvh] bg-background flex flex-col">
       {/* Header - Fixed spacing for mobile */}
       <div className="flex-shrink-0 pt-safe-top pt-4 pb-4 px-4">
         <div className="flex justify-center">

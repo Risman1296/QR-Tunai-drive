@@ -1,5 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
+
+
+// Force static export untuk Cloudflare Pages
+export const dynamic = 'force-static';
+export const revalidate = 0;
 
 interface UserPayload {
   userId: string;

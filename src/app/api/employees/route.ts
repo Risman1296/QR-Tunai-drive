@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { 
   type Employee, 
@@ -6,6 +6,10 @@ import {
   addEmployee, 
   updateEmployee 
 } from './employees-storage';
+
+// Force static export untuk Cloudflare Pages
+export const dynamic = 'force-static';
+export const revalidate = 0;
 
 // JWT Secret validation
 const JWT_SECRET = process.env.JWT_SECRET;

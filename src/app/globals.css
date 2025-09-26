@@ -2,131 +2,388 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    /* QR-Tunai Brand Colors */
-    --qr-blue: 239 68% 68%; /* #4f46e5 */
-    --qr-yellow: 39 96% 55%; /* #f59e0b */
-    
-    --background: 0 0% 98%; /* Very light background */
-    --foreground: 239 68% 15%; /* Dark blue text */
-    --card: 0 0% 100%;
-    --card-foreground: 239 68% 15%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 239 68% 15%;
-    --primary: 239 68% 68%; /* QR-Tunai Blue */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 39 96% 55%; /* QR-Tunai Yellow */
-    --secondary-foreground: 239 68% 15%;
-    --muted: 218 50% 95%;
-    --muted-foreground: 239 35% 45%;
-    --accent: 39 96% 55%; /* QR-Tunai Yellow */
-    --accent-foreground: 239 68% 15%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 218 50% 90%;
-    --input: 218 50% 90%;
-    --ring: 239 68% 68%; /* QR-Tunai Blue */
-    --radius: 0.75rem;
-    
-    /* Chart colors using QR-Tunai palette */
-    --chart-1: 239 68% 68%; /* Blue */
-    --chart-2: 39 96% 55%; /* Yellow */
-    --chart-3: 239 45% 45%; /* Darker blue */
-    --chart-4: 39 85% 65%; /* Lighter yellow */
-    --chart-5: 218 50% 65%; /* Complementary blue */
-    
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 239 68% 15%;
-    --sidebar-primary: 239 68% 68%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 39 96% 92%;
-    --sidebar-accent-foreground: 239 68% 15%;
-    --sidebar-border: 218 50% 90%;
-    --sidebar-ring: 239 68% 68%;
+@layer components {
+  /* wrapper section seragam semua TAB */
+  .section {
+    @apply mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16;
   }
- 
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 197 76% 53%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 33 100% 50%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 197 76% 53%;
-    --chart-1: 197 76% 53%;
-    --chart-2: 33 100% 50%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 197 76% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 197 76% 53%;
+
+  /* heading + subheading seragam */
+  .h-section {
+    @apply text-balance text-3xl sm:text-4xl font-semibold leading-tight tracking-tight;
+  }
+  .lede {
+    @apply mt-3 text-pretty text-[15px] sm:text-base leading-relaxed text-white/80 max-w-3xl;
+  }
+
+  /* grid responsif seragam */
+  .grid-2 {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8;
+  }
+  .grid-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6;
+  }
+
+  /* card seragam & tinggi sama */
+  .card {
+    @apply rounded-2xl border bg-white/5 border-white/15 backdrop-blur
+           p-5 sm:p-6 shadow-sm h-full flex flex-col;
+  }
+  .card-ghost {
+    @apply rounded-2xl border border-white/15 bg-transparent p-5 sm:p-6 h-full flex flex-col;
+  }
+
+  /* teks card */
+  .card-title  { @apply text-base sm:text-lg font-semibold text-white; }
+  .card-body   { @apply mt-2 text-sm sm:text-[15px] leading-relaxed text-white/80; }
+
+  /* stat box seragam & rata tengah */
+  .stat {
+    @apply rounded-xl border border-white/15 bg-white/5 backdrop-blur
+           p-4 sm:p-5 text-center h-full flex flex-col items-center justify-center;
+  }
+  .stat-k { @apply text-xl sm:text-2xl font-bold text-white; }
+  .stat-v { @apply mt-1 text-xs sm:text-sm text-white/70; }
+
+  /* Header gradient class (not in use)
+  .header-gradient {
+    @apply relative;
+  }
+  .header-gradient::before {
+    content:"";
+    @apply pointer-events-none absolute inset-0 bg-gradient-to-b
+           from-slate-950/80 via-slate-950/50 to-transparent;
+  }
+  */
+
+  /* Hero background with drive-thru theme - extends to cover header */
+  .hero-background {
+    position: relative;
+    min-height: calc(100vh + 120px); /* Extra height untuk cover area lebih tinggi */
+    margin-top: -120px; /* Pull up lebih tinggi ke ujung atas */
+    padding-top: 184px; /* Padding lebih besar untuk kompensasi */
+    background-image: url('/drive-thru-bg.svg');
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    /* Force background to extend to viewport edges */
+    box-shadow: 0 -200px 0 0 var(--hero-bg-extend, transparent);
+  }
+  
+  .hero-background::before {
+    content: "";
+    position: absolute;
+    top: -200px; /* Extend overlay further up */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(51, 65, 85, 0.75) 50%, rgba(15, 23, 42, 0.9) 100%);
+    z-index: 1;
+  }
+
+  /* Hero background full coverage - mentok ke ujung atas */
+  .hero-background-full {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    min-height: 100vh;
+    padding-top: 160px; /* Space untuk header + tab nav */
+    background-image: url('/qris-background.svg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+
+  .hero-background-full::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(51, 65, 85, 0.75) 50%, rgba(15, 23, 42, 0.9) 100%);
+    z-index: 1;
+  }
+
+  /* Header gradient fade - memudar ke bawah hingga di bawah tab */
+  .header-gradient-fade {
+    position: relative;
+  }
+
+  .header-gradient-fade::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 120px; /* Tinggi gradient sampai di bawah tab navigation */
+    background: linear-gradient(
+      to bottom,
+      rgba(15, 23, 42, 0.95) 0%,     /* Dark slate hampir solid di atas */
+      rgba(30, 41, 59, 0.85) 30%,    /* Medium opacity di tengah */
+      rgba(51, 65, 85, 0.6) 60%,     /* Lighter opacity */
+      rgba(71, 85, 105, 0.3) 80%,    /* Very light */
+      transparent 100%                /* Completely transparent di bawah */
+    );
+    -webkit-backdrop-filter: blur(8px); /* Safari support */
+    backdrop-filter: blur(8px);         /* Subtle blur effect */
+    pointer-events: none;               /* Don't interfere with clicks */
+    z-index: -1;                        /* Behind header content */
+  }
+
+  /* Gradient utility classes */
+  /* Gradient dari atas ke tengah */
+  .gradient-top {
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0) 50%);
+  }
+
+  /* Gradient dari bawah ke tengah */
+  .gradient-bottom {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0) 50%);
+  }
+
+  /* Gradient gabungan atas dan bawah ke tengah */
+  .gradient-top-bottom {
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.6),
+      rgba(0, 0, 0, 0) 50%,
+      rgba(0, 0, 0, 0.6) 100%
+    );
   }
 }
- 
+
+:root {
+  /* Brand primaries */
+  --qr-blue: 237 88% 67%;
+  --qr-yellow: 40 97% 55%;
+
+  --background: 220 26% 97%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --primary: var(--qr-blue);
+  --primary-foreground: 0 0% 100%;
+  --secondary: var(--qr-yellow);
+  --secondary-foreground: 222 47% 11%;
+  --muted: 215 32% 93%;
+  --muted-foreground: 220 15% 45%;
+  --accent: 200 76% 61%;
+  --accent-foreground: 222 47% 11%;
+  --destructive: 2 84% 63%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 215 32% 90%;
+  --input: 215 32% 90%;
+  --ring: var(--qr-blue);
+  --radius: 0.75rem;
+  --success: 152 76% 36%;
+  --success-foreground: 0 0% 100%;
+  --chart-1: 237 88% 67%;
+  --chart-2: 40 97% 55%;
+  --chart-3: 200 78% 62%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
+  --sidebar-background: 0 0% 100%;
+  --sidebar-foreground: 222 47% 11%;
+  --sidebar-primary: var(--qr-blue);
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 215 32% 95%;
+  --sidebar-accent-foreground: 222 47% 11%;
+  --sidebar-border: 215 32% 90%;
+  --sidebar-ring: var(--qr-blue);
+}
+
+.dark {
+  --background: 222 47% 8%;
+  --foreground: 0 0% 98%;
+  --card: 222 47% 10%;
+  --card-foreground: 0 0% 98%;
+  --popover: 222 47% 10%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 205 100% 60%;
+  --primary-foreground: 222 47% 8%;
+  --secondary: 204 100% 35%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 222 24% 20%;
+  --muted-foreground: 211 14% 68%;
+  --accent: 40 97% 55%;
+  --accent-foreground: 222 47% 10%;
+  --destructive: 0 62% 45%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 222 24% 25%;
+  --input: 222 24% 25%;
+  --ring: 205 100% 60%;
+  --success: 152 76% 40%;
+  --success-foreground: 0 0% 100%;
+  --chart-1: 205 100% 60%;
+  --chart-2: 40 97% 55%;
+  --chart-3: 330 81% 60%;
+  --chart-4: 278 65% 65%;
+  --chart-5: 197 100% 69%;
+  --sidebar-background: 222 47% 11%;
+  --sidebar-foreground: 0 0% 98%;
+  --sidebar-primary: 205 100% 60%;
+  --sidebar-primary-foreground: 222 47% 10%;
+  --sidebar-accent: 222 24% 20%;
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-border: 222 24% 20%;
+  --sidebar-ring: 205 100% 60%;
+}
+
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
+
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    line-height: 1.6;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: hsl(var(--foreground));
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: hsl(var(--muted-foreground));
+    line-height: 1.625;
+    margin-bottom: 0.875rem;
+  }
+
+  /* Consistent spacing for lists */
+  ul,
+  ol {
+    margin: 0.75rem 0 1rem;
+    padding-left: 1.25rem;
+  }
+  li {
+    margin: 0.25rem 0;
+  }
+
+  /* Normalize form element spacing */
+  label {
+    display: inline-block;
+    margin-bottom: 0.375rem;
+    color: hsl(var(--foreground));
+  }
+  input,
+  select,
+  textarea {
+    margin: 0; /* avoid browser default margins */
+  }
+
+  /* Section rhythm for generic content areas */
+  section,
+  article,
+  main {
+    scroll-margin-top: 6rem;
+  }
+
+  a {
+    color: hsl(var(--primary));
+    text-underline-offset: 4px;
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  a:hover {
+    text-decoration: underline;
   }
 }
 
-/* Mobile Safe Area and Viewport Fixes */
 @layer utilities {
+  /* Vertical rhythm utility: apply to wrappers that contain text/content */
+  .content-spacing > * + * {
+    margin-top: 0.75rem;
+  }
+
+  /* Stack utilities for controlling vertical gaps without extra wrappers */
+  .stack-sm > * + * { margin-top: 0.5rem; }
+  .stack-md > * + * { margin-top: 0.75rem; }
+  .stack-lg > * + * { margin-top: 1rem; }
+  .stack-xl > * + * { margin-top: 1.5rem; }
+
   .pt-safe-top {
-    padding-top: env(safe-area-inset-top, 0);
+    padding-top: env(safe-area-inset-top);
   }
+
   .pb-safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-bottom: env(safe-area-inset-bottom);
   }
+
   .min-h-screen-safe {
-    min-height: calc(100vh - env(safe-area-inset-top, 0) - env(safe-area-inset-bottom, 0));
+    min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+
+  .text-success {
+    color: hsl(var(--success));
+  }
+
+  .bg-success {
+    background-color: hsl(var(--success));
+    color: hsl(var(--success-foreground));
+  }
+
+  .border-success {
+    border-color: hsl(var(--success));
+  }
+
+  .ring-success {
+    --tw-ring-color: hsl(var(--success));
   }
 }
 
-/* Improved mobile input handling */
 @layer components {
   .mobile-optimized {
     -webkit-appearance: none;
-    -moz-appearance: textfield;
+    -moz-appearance: none;
+    appearance: none;
   }
-  
-  /* Ensure form inputs are accessible on mobile */
+
   input[type="number"]::-webkit-outer-spin-button,
   input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
   }
-  
-  /* Prevent zoom on input focus for iOS */
-  @media screen and (max-width: 768px) {
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  @media (max-width: 768px) {
+
     input[type="text"],
     input[type="number"],
     input[type="tel"],
     input[type="email"],
+    input[type="password"],
     select,
     textarea {
       font-size: 16px;
+      border-radius: 8px;
+      min-height: 44px;
+    }
+
+    button,
+    [role="button"] {
+      min-height: 44px;
+      min-width: 44px;
     }
   }
 }

@@ -1,0 +1,71 @@
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e293b;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#334155;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#475569;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Pattern overlay -->
+    <pattern id="dots" patternUnits="userSpaceOnUse" width="40" height="40">
+      <circle cx="20" cy="20" r="1" fill="#64748b" opacity="0.2"/>
+    </pattern>
+    
+    <!-- Geometric shapes for modern tech feel -->
+    <linearGradient id="accent1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.2" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:0.1" />
+    </linearGradient>
+    
+    <linearGradient id="accent2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:0.15" />
+      <stop offset="100%" style="stop-color:#2563eb;stop-opacity:0.05" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main background -->
+  <rect width="100%" height="100%" fill="url(#bgGradient)"/>
+  <rect width="100%" height="100%" fill="url(#dots)"/>
+  
+  <!-- Stylized drive-thru elements on the right side -->
+  <!-- Car outline suggestion -->
+  <rect x="1200" y="400" width="200" height="100" rx="15" fill="url(#accent1)" opacity="0.3"/>
+  <rect x="1220" y="420" width="40" height="25" rx="8" fill="#3b82f6" opacity="0.2"/>
+  
+  <!-- Drive-thru booth/kiosk -->
+  <rect x="1400" y="350" width="120" height="200" rx="12" fill="url(#accent2)" opacity="0.25"/>
+  <rect x="1410" y="370" width="100" height="80" rx="8" fill="#60a5fa" opacity="0.15"/>
+  
+  <!-- QR code representation -->
+  <rect x="1430" y="390" width="60" height="60" rx="4" fill="#1e40af" opacity="0.2"/>
+  <rect x="1440" y="400" width="8" height="8" fill="#3b82f6" opacity="0.4"/>
+  <rect x="1452" y="400" width="8" height="8" fill="#3b82f6" opacity="0.4"/>
+  <rect x="1464" y="400" width="8" height="8" fill="#3b82f6" opacity="0.4"/>
+  <rect x="1440" y="412" width="8" height="8" fill="#3b82f6" opacity="0.4"/>
+  <rect x="1464" y="412" width="8" height="8" fill="#3b82f6" opacity="0.4"/>
+  <rect x="1440" y="424" width="8" height="8" fill="#3b82f6" opacity="0.4"/>
+  <rect x="1452" y="424" width="8" height="8" fill="#3b82f6" opacity="0.4"/>
+  <rect x="1464" y="424" width="8" height="8" fill="#3b82f6" opacity="0.4"/>
+  
+  <!-- Tech elements -->
+  <circle cx="1350" cy="300" r="50" fill="url(#accent1)" opacity="0.15"/>
+  <circle cx="1350" cy="300" r="25" fill="#60a5fa" opacity="0.1"/>
+  
+  <!-- Abstract geometric shapes for modern feel -->
+  <path d="M1100 200 L1150 180 L1180 220 L1130 240 Z" fill="#3b82f6" opacity="0.1"/>
+  <path d="M1250 150 L1300 130 L1330 170 L1280 190 Z" fill="#60a5fa" opacity="0.08"/>
+  
+  <!-- Network/connection lines suggesting digital connectivity -->
+  <line x1="1200" y1="450" x2="1400" y2="420" stroke="#3b82f6" stroke-width="1" opacity="0.2"/>
+  <line x1="1350" y1="350" x2="1450" y2="420" stroke="#60a5fa" stroke-width="1" opacity="0.15"/>
+  
+  <!-- Subtle grid lines for tech aesthetic -->
+  <defs>
+    <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse">
+      <path d="M 80 0 L 0 0 0 80" fill="none" stroke="#475569" stroke-width="0.5" opacity="0.1"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+</svg>

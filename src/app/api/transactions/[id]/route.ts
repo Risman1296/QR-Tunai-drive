@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTransactionById, updateTransaction, TransactionStatus } from '@/lib/transaction-store';
+import { getTransactionById, getTransactions, updateTransaction, TransactionStatus, Transaction } from '@/lib/transaction-store';
+
+// Force static exports for Cloudflare Pages
+export const dynamic = 'force-static';
+export const revalidate = 0;
 
 // GET a single transaction by ID
 export async function GET(
@@ -8,10 +12,21 @@ export async function GET(
 ) {
   const params = await context.params;
   try {
+    console.log(`🔍 Looking for transaction: ${params.id}`);
+    
     const transaction = getTransactionById(params.id);
+    
     if (!transaction) {
+      console.log(`❌ Transaction ${params.id} not found in store`);
+      // Let's also log all available transactions for debugging
+      const allTransactions = getTransactions();
+      console.log(`📋 Available transactions in store: ${allTransactions.length}`);
+      console.log('Available transaction IDs:', allTransactions.map((t: Transaction) => t.id));
+      
       return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
     }
+    
+    console.log(`✅ Found transaction: ${params.id}`, transaction);
     return NextResponse.json(transaction);
   } catch (error) {
     console.error(`Error fetching transaction ${params.id}:`, error);

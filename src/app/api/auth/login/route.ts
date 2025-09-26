@@ -1,6 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+
+
+// Force dynamic untuk autentikasi
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 // Get employees from persistent storage (simulate database)
 // In production, this should connect to your actual database
@@ -147,7 +152,8 @@ export async function POST(request: NextRequest) {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 86400
+        maxAge: 86400,
+        path: '/',
       });
 
       return response;

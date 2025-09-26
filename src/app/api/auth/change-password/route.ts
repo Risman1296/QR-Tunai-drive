@@ -1,6 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+
+
+// Force dynamic untuk autentikasi dan perubahan password
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 // In production, this should be in a database
 // This needs to be synchronized with login system

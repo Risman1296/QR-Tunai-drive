@@ -1,0 +1,110 @@
+{
+  "bankAccounts": [
+    {
+      "bankName": "Bank Central Asia",
+      "bankCode": "014",
+      "accountNumber": "7930471733",
+      "accountHolder": "Risman Mawir",
+      "balance": 0,
+      "isActive": true,
+      "logo": "",
+      "swiftCode": "CENAIDJA",
+      "branchName": "Palopo",
+      "integrationId": "bca-snap-qris",
+      "accountType": "savings",
+      "dailyLimit": 500000000,
+      "monthlyLimit": 10000000000,
+      "id": "bank-1758762411888-3k96f8",
+      "createdAt": "2025-09-25T01:06:51.888Z",
+      "updatedAt": "2025-09-25T01:06:51.888Z"
+    },
+    {
+      "bankName": "Bank Rakyat Indonesia",
+      "bankCode": "002",
+      "accountNumber": "499401000014561",
+      "accountHolder": "Risman Mawir",
+      "balance": 0,
+      "isActive": true,
+      "logo": "",
+      "swiftCode": "BRINIDJA",
+      "branchName": "Palopo",
+      "accountType": "savings",
+      "dailyLimit": 500000000,
+      "monthlyLimit": 10000000000,
+      "id": "bank-1758828666021-iinuzh",
+      "createdAt": "2025-09-25T19:31:06.021Z",
+      "updatedAt": "2025-09-25T19:31:06.021Z"
+    }
+  ],
+  "qrisAccounts": [
+    {
+      "id": "qris-main",
+      "merchantId": "QRT123456",
+      "merchantName": "QR Tunai Drive-Thru",
+      "qrisCode": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+      "logoUrl": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIGZpbGw9IiNGRjMzMDAiLz48dGV4dCB4PSIyNSIgeT0iMzAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIiBmb250LXNpemU9IjEyIj5RPC90ZXh0Pjwvc3ZnPg==",
+      "isActive": true,
+      "feePercentage": 0.7,
+      "dailyLimit": 20000000,
+      "monthlyLimit": 500000000,
+      "createdAt": "2025-09-24T19:34:20.802Z",
+      "updatedAt": "2025-09-24T19:34:20.802Z"
+    }
+  ],
+  "bankIntegrations": [
+    {
+      "id": "bca-snap-qris",
+      "bankName": "Bank Central Asia",
+      "bankCode": "014",
+      "provider": "bca_snap_qris",
+      "description": "Integrasi SNAP QRIS BCA",
+      "isActive": true,
+      "credentials": {
+        "baseUrl": "https://sandbox.bca.co.id",
+        "clientId": "cff7cb29-7afc-433d-8585-f9f8894926e5",
+        "clientSecret": "55e06eef-454b-4d23-b5a7-96f3f6272b9b",
+        "apiSecret": "f8aad389-dc2d-456b-a57c-20fc05387401",
+        "channelId": "95051",
+        "qrisPath": "https://sandbox.bca.co.id/api/oauth/token",
+        "balancePath": "/openapi/v1.0/balance-inquiry",
+        "transactionsPath": "/openapi/v1.0/bank-statement"
+      },
+      "metadata": {
+        "note": "Isi kredensial melalui dashboard settings",
+        "timeOffsetMinutes": 420
+      },
+      "createdAt": "2025-09-25T06:37:25.7986922+08:00",
+      "updatedAt": "2025-09-25T20:39:24.527Z"
+    },
+    {
+      "id": "bri-realtime",
+      "bankName": "Bank Rakyat Indonesia",
+      "bankCode": "002",
+      "provider": "bri_realtime",
+      "description": "Integrasi BRIAPI untuk saldo & mutasi realtime",
+      "isActive": true,
+      "credentials": {
+        "baseUrl": "https://sandbox.partner.api.bri.co.id",
+        "balancePath": "/v2/inquiry/{accountNumber}",
+        "transactionsPath": "/v2/accounts/{accountNumber}/transactions",
+        "apiSecret": "pQE47pgdC8KVQvV7Y4ai8Olc2AUQXa8k"
+      },
+      "metadata": {
+        "note": "Isi kredensial dari portal BRIAPI",
+        "timestampSkewSeconds": 300,
+        "useUtcTimestamp": true,
+        "tokenAuth": "form",
+        "signatureFormat": "payload",
+        "headersStyle": "bri",
+        "signatureEncoding": "hex"
+      },
+      "createdAt": "2025-09-25T19:36:52.231617Z",
+      "updatedAt": "2025-09-26T03:07:21.045Z"
+    }
+  ],
+  "defaultBankAccount": "bank-1758828666021-iinuzh",
+  "defaultQrisAccount": "qris-main",
+  "autoBackup": true,
+  "backupInterval": 24,
+  "lastBackup": "2025-09-26T03:07:21.045Z"
+}

@@ -32,13 +32,14 @@ export default function GenerateQRPage() {
     setIsLoading(true);
     setError(null);
     try {
-      // Generate token untuk transaksi
+      // Generate token menggunakan endpoint baru dengan TTL 60s
       const tokenResponse = await fetch('/api/tokens', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          createdBy: 'QR-Dashboard',
-          expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 menit
+          amount: 50000, // Default amount
+          description: 'Drive-Thru Payment',
+          ttlSeconds: 60, // 60 detik TTL
         }),
       });
 
@@ -47,29 +48,19 @@ export default function GenerateQRPage() {
       }
 
       const tokenData = await tokenResponse.json();
-      const origin = window.location.origin;
-      const transactionUrl = `${origin}/t/${tokenData.id}/form`;
-
+      
       const newTransaction = {
         id: tokenData.id,
-        qrUrl: transactionUrl,
+        qrUrl: tokenData.qrUrl,
         createdAt: new Date().toISOString(),
       };
 
       setTransaction(newTransaction);
-
-      // Generate QR Code dengan styling yang lebih bagus
-      const qrDataUrl = await QRCode.toDataURL(transactionUrl, { 
-        width: 280,
-        margin: 1,
-        color: { dark: '#000000', light: '#ffffff' },
-        errorCorrectionLevel: 'M',
-      });
-      setQrCodeUrl(qrDataUrl);
+      setQrCodeUrl(tokenData.qrCodeDataUrl);
 
       toast({
         title: "QR Code Berhasil Dibuat",
-        description: "QR code siap untuk dipindai pelanggan",
+        description: "QR code siap untuk dipindai pelanggan (berlaku 60 detik)",
       });
 
       // Set status ke scanning jika berhasil
@@ -92,52 +83,62 @@ export default function GenerateQRPage() {
     generateNewTransaction();
   };
 
-  // Auto-refresh setiap 5 menit jika diaktifkan
+  // Auto-refresh setiap 2 menit jika diaktifkan (mengganti 5 menit)
   useEffect(() => {
     if (autoRefresh) {
       const interval = setInterval(() => {
         if (qrStatus.status === 'waiting') {
           generateNewTransaction();
         }
-      }, 5 * 60 * 1000);
+      }, 120000); // 2 menit untuk refresh otomatis
+
       return () => clearInterval(interval);
     }
   }, [autoRefresh, generateNewTransaction, qrStatus.status]);
+
+  // Countdown untuk TTL 60 detik
+  const [countdown, setCountdown] = useState<number>(0);
+  
+  useEffect(() => {
+    if (transaction) {
+      const startTime = new Date(transaction.createdAt).getTime();
+      const interval = setInterval(() => {
+        const now = Date.now();
+        const elapsed = now - startTime;
+        const remaining = Math.max(0, 60000 - elapsed); // 60 detik
+        setCountdown(Math.ceil(remaining / 1000));
+        
+        if (remaining <= 0) {
+          // QR expired, refresh automatically
+          generateNewTransaction();
+          clearInterval(interval);
+        }
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [transaction, generateNewTransaction]);
 
   useEffect(() => {
     generateNewTransaction();
   }, [generateNewTransaction]);
 
-  // Listen for Server-Sent Events
+  // Listen for SSE per token id (consumed/expired)
   useEffect(() => {
-    const eventSource = new EventSource('/api/qr/events');
-
-    eventSource.addEventListener('qrScanned', (event) => {
-      const data = JSON.parse(event.data);
-      console.log('QR Scanned Event Received:', data);
-      
-      // Check if the scanned QR belongs to the current transaction
-      if (transaction && data.transactionId === transaction.id) {
-        toast({
-          title: 'QR Telah Dipindai!',
-          description: 'Membuat kode QR baru...',
-        });
-        // Generate a new QR code immediately
-        generateNewTransaction();
-      }
+    if (!transaction?.id) return;
+    const es = new EventSource(`/api/tokens/${transaction.id}/stream`);
+    const onDone = () => {
+      toast({ title: 'QR selesai', description: 'Membuat QR baru...' });
+      generateNewTransaction();
+    };
+    es.addEventListener('consumed', onDone);
+    es.addEventListener('expired', onDone);
+    es.addEventListener('error', () => {
+      console.warn('SSE Error');
+      es.close();
     });
-
-    eventSource.onerror = (err) => {
-        console.error('SSE Error:', err);
-        setError('Koneksi real-time terputus. Coba muat ulang halaman.');
-        eventSource.close();
-    };
-
-    // Cleanup on component unmount
-    return () => {
-      eventSource.close();
-    };
-  }, [generateNewTransaction, toast, transaction]);
+    return () => es.close();
+  }, [generateNewTransaction, toast, transaction?.id]);
 
   const getStatusBadge = () => {
     switch (qrStatus.status) {

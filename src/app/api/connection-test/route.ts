@@ -5,6 +5,10 @@
 
 import { NextResponse } from 'next/server';
 
+// Force static export untuk Cloudflare Pages
+export const dynamic = 'force-static';
+export const revalidate = 0;
+
 export async function GET() {
   try {
     // Return a simple response for connection testing

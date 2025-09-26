@@ -17,19 +17,15 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   ];
 
   return (
-    <div className="sticky top-16 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
-      <div className="container">
-        <div className="flex space-x-1 py-4 overflow-x-auto">
+    <div className="sticky top-16 z-50 bg-transparent">
+      <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-center gap-2 py-3 overflow-x-auto md:overflow-visible">
           {tabs.map((tab) => (
             <Button
               key={tab.id}
-              variant={activeTab === tab.id ? 'default' : 'ghost'}
+              variant="ghost"
               onClick={() => onTabChange(tab.id)}
-              className={`whitespace-nowrap font-medium transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-              }`}
+              className={`whitespace-nowrap rounded-xl px-3.5 py-2 text-sm font-medium transition-colors ${activeTab === tab.id ? 'text-white' : 'text-white/70 hover:text-white'}`}
             >
               {tab.label}
             </Button>

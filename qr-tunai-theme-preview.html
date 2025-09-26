@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QR‑Tunai — Theme Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{
+      --bg:#0b1220;         /* midnight */
+      --bg-2:#0f172a;       /* slate-900 */
+      --surface:#111827;    /* gray-900 */
+      --border:rgba(255,255,255,.15);
+      --card:rgba(255,255,255,.06);
+      --muted:rgba(255,255,255,.7);
+      --text:#ffffff;
+      --primary:#2563eb;    /* blue-600 */
+      --primary-600:#1d4ed8;
+      --ring:rgba(37,99,235,.35);
+      --overlay1:rgba(2,6,23,.85);
+      --overlay2:rgba(2,6,23,.55);
+    }
+    /* UTILITIES (match Tailwind style) */
+    @layer utilities{
+      .text-balance{ text-wrap:balance; }
+      .text-pretty{ text-wrap:pretty; }
+    }
+    @layer components{
+      .section{ @apply mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16; }
+      .h-section{ @apply text-balance text-3xl sm:text-4xl font-semibold leading-tight tracking-tight text-white; }
+      .lede{ @apply mt-3 text-pretty text-[15px] sm:text-base leading-relaxed text-white/80 max-w-3xl; }
+      .grid-2{ @apply grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8; }
+      .grid-3{ @apply grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8; }
+      .grid-4{ @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6; }
+      .card{ @apply rounded-2xl border border-[var(--border)] bg-[var(--card)] backdrop-blur p-5 sm:p-6 shadow-sm h-full flex flex-col; }
+      .stat{ @apply rounded-xl border border-[var(--border)] bg-[var(--card)] backdrop-blur p-4 sm:p-5 text-center h-full flex flex-col items-center justify-center; }
+      .stat-k{ @apply text-xl sm:text-2xl font-bold text-white; }
+      .stat-v{ @apply mt-1 text-xs sm:text-sm text-white/70; }
+      .btn{ @apply inline-flex items-center justify-center rounded-xl px-5 py-3 font-medium; }
+      .btn-primary{ @apply bg-[var(--primary)] text-white hover:bg-[var(--primary-600)] focus:outline-none focus:ring-4; box-shadow: 0 0 0 0 var(--ring); }
+      .btn-ghost{ @apply border border-[var(--border)] bg-white/10 text-white hover:bg-white/20; }
+      .tab-btn{ @apply px-4 py-2 rounded-lg text-sm font-medium text-white/90 hover:text-white hover:bg-white/10; }
+      .tab-btn[aria-selected="true"]{ @apply bg-white/10 text-white; }
+      .header-shadow{ box-shadow: 0 5px 30px rgba(0,0,0,.35); }
+      .header-gradient{ position: relative; }
+      .header-gradient::before{
+        content:""; position:absolute; inset:0;
+        background: linear-gradient(to bottom, var(--overlay1), var(--overlay2), transparent);
+        pointer-events:none; border-bottom: 1px solid rgba(255,255,255,.06);
+      }
+    }
+    /* BACKDROP HERO (no external image necessary) */
+    .hero-bg{
+      background:
+        radial-gradient(1200px 600px at 80% 40%, rgba(251,146,60,.18), transparent 60%),
+        radial-gradient(1000px 500px at 15% 35%, rgba(59,130,246,.25), transparent 55%),
+        linear-gradient(180deg, #0b1220 0%, #0b1220 45%, #0f172a 100%);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[var(--bg)] text-white antialiased">
+  <!-- Header -->
+  <header class="header-gradient sticky top-0 z-50 bg-[var(--bg)]/40 backdrop-blur header-shadow">
+    <div class="section py-3 sm:py-4">
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center font-bold">QR</div>
+          <div class="leading-tight">
+            <div class="text-white font-semibold">QRTunai</div>
+            <div class="text-[11px] text-white/60 tracking-wide">FINTECH ENABLER</div>
+          </div>
+        </div>
+        <nav class="hidden md:flex items-center gap-1">
+          <button class="tab-btn" data-tab="tab-pengenalan" aria-selected="true">Pengenalan</button>
+          <button class="tab-btn" data-tab="tab-layanan">Layanan</button>
+          <button class="tab-btn" data-tab="tab-kemitraan">Kemitraan</button>
+          <button class="tab-btn" data-tab="tab-cara-kerja">Cara Kerja</button>
+          <button class="tab-btn" data-tab="tab-keunggulan">Keunggulan</button>
+        </nav>
+        <a class="hidden sm:inline-flex btn btn-ghost" href="#">Login</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 hero-bg"></div>
+    <div class="section relative text-center">
+      <span class="inline-block text-[11px] tracking-wide text-white/80 bg-white/10 border border-[var(--border)] rounded-full px-3 py-1 backdrop-blur">FINTECH ENABLER DRIVE‑THRU</span>
+      <h1 class="mt-4 text-balance text-4xl sm:text-5xl font-semibold">QR‑Tunai Drive‑Thru — Ekosistem transaksi <br class="hidden sm:block"/>15 detik di titik kehidupan masyarakat</h1>
+      <p class="lede mx-auto">Transaksi perbankan bisa dilakukan tanpa turun kendaraan. Kami menghadirkan jaringan outlet drive‑thru dengan teknologi QR, automasi verifikasi, dan tim operasional yang siap mengeksekusi di lapangan.</p>
+      <div class="mt-5 flex flex-col sm:flex-row gap-3 justify-center">
+        <a class="btn btn-primary" href="#">Mulai Pantau Dashboard</a>
+        <a class="btn btn-ghost" href="#">Buka Kemitraan Outlet</a>
+      </div>
+
+      <!-- Stats -->
+      <div class="mt-10 grid-4">
+        <div class="stat"><div class="stat-k">10,000+</div><div class="stat-v">Transaksi Harian</div></div>
+        <div class="stat"><div class="stat-k">500+</div><div class="stat-v">Outlet Tersebar</div></div>
+        <div class="stat"><div class="stat-k">98.9%</div><div class="stat-v">Tingkat Kepuasan</div></div>
+        <div class="stat"><div class="stat-k">15 Detik</div><div class="stat-v">Rata‑rata Waktu Transaksi</div></div>
+      </div>
+
+      <!-- Misi & Siapa Kami -->
+      <div class="mt-8 grid-2 items-stretch">
+        <div class="card">
+          <h3 class="text-lg font-semibold text-white">Misi Kami</h3>
+          <p class="mt-2 text-sm sm:text-[15px] leading-relaxed text-white/80">
+            Menghubungkan masyarakat dengan layanan keuangan yang mudah, cepat, dan terjangkau — langsung di titik kehidupan mereka: jalan raya, outlet, dan komunitas lokal.
+          </p>
+        </div>
+        <div class="card">
+          <h3 class="text-lg font-semibold text-white">Siapa Kami</h3>
+          <p class="mt-2 text-sm sm:text-[15px] leading-relaxed text-white/80">
+            QR‑Tunai adalah Fintech Enabler Indonesia yang membantu UMKM, lembaga keuangan, koperasi, dan mitra bisnis menghadirkan layanan transaksi tunai dan non‑tunai berbasis QR‑Code langsung di lapangan.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TABS CONTENT -->
+  <main id="tabs" class="space-y-0">
+    <!-- Pengenalan -->
+    <section id="tab-pengenalan" class="section">
+      <h2 class="h-section text-center md:text-left">Pengenalan</h2>
+      <p class="lede mx-auto md:mx-0 text-center md:text-left">
+        Ubah titik ramai menjadi layanan keuangan. Scan QR → isi form → transaksi diproses real‑time.
+      </p>
+      <div class="mt-8 grid-3">
+        <div class="card">
+          <h3 class="text-base sm:text-lg font-semibold">Drive‑Thru Banking</h3>
+          <p class="mt-2 text-sm text-white/80">Tarik/setor/transfer tanpa turun dari kendaraan.</p>
+        </div>
+        <div class="card">
+          <h3 class="text-base sm:text-lg font-semibold">QR Payment System</h3>
+          <p class="mt-2 text-sm text-white/80">QRIS & pembayaran tagihan terintegrasi.</p>
+        </div>
+        <div class="card">
+          <h3 class="text-base sm:text-lg font-semibold">Dashboard Outlet</h3>
+          <p class="mt-2 text-sm text-white/80">Monitoring transaksi & SLA operasional.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Layanan -->
+    <section id="tab-layanan" class="section hidden">
+      <h2 class="h-section text-center md:text-left">Layanan</h2>
+      <p class="lede mx-auto md:mx-0 text-center md:text-left">Solusi lengkap transaksi drive‑thru modern.</p>
+      <div class="mt-8 grid-4">
+        <div class="card"><h3 class="text-base sm:text-lg font-semibold">Tarik Tunai</h3><p class="mt-2 text-sm text-white/80">Akses tunai kilat, aman.</p></div>
+        <div class="card"><h3 class="text-base sm:text-lg font-semibold">Setor Tunai</h3><p class="mt-2 text-sm text-white/80">Setor langsung ke rekening.</p></div>
+        <div class="card"><h3 class="text-base sm:text-lg font-semibold">Transfer</h3><p class="mt-2 text-sm text-white/80">Kirim dana ke bank lain.</p></div>
+        <div class="card"><h3 class="text-base sm:text-lg font-semibold">Pembayaran & QRIS</h3><p class="mt-2 text-sm text-white/80">Bayar tagihan & QRIS.</p></div>
+      </div>
+    </section>
+
+    <!-- Kemitraan -->
+    <section id="tab-kemitraan" class="section hidden">
+      <h2 class="h-section text-center md:text-left">Kemitraan</h2>
+      <p class="lede mx-auto md:mx-0 text-center md:text-left">Skema franchise digital—terhubung ke sistem pusat.</p>
+      <div class="mt-8 grid-3">
+        <div class="card"><h3 class="text-base sm:text-lg font-semibold">Model Bisnis</h3><p class="mt-2 text-sm text-white/80">Revenue share & biaya terukur.</p></div>
+        <div class="card"><h3 class="text-base sm:text-lg font-semibold">Operasional</h3><p class="mt-2 text-sm text-white/80">SOP, pelatihan & dukungan 24/7.</p></div>
+        <div class="card"><h3 class="text-base sm:text-lg font-semibold">Teknologi</h3><p class="mt-2 text-sm text-white/80">API, verifikasi otomatis, audit log.</p></div>
+      </div>
+    </section>
+
+    <!-- Cara Kerja -->
+    <section id="tab-cara-kerja" class="section hidden">
+      <h2 class="h-section text-center md:text-left">Cara Kerja</h2>
+      <p class="lede mx-auto md:mx-0 text-center md:text-left">Scan → Isi Form → Verifikasi → Selesai.</p>
+      <div class="mt-8 grid-4">
+        <div class="card"><h3 class="text-base sm:text-lg font-semibold">1. Scan QR</h3><p class="mt-2 text-sm text-white/80">Token unik per transaksi (TTL).</p></div>
+        <div class="card"><h3 class="text-base sm:text-lg font-semibold">2. Input</h3><p class="mt-2 text-sm text-white/80">Form singkat & validasi.</p></div>
+        <div class="card"><h3 class="text-base sm:text-lg font-semibold">3. Verifikasi</h3><p class="mt-2 text-sm text-white/80">Otomatis + staf outlet.</p></div>
+        <div class="card"><h3 class="text-base sm:text-lg font-semibold">4. Selesai</h3><p class="mt-2 text-sm text-white/80">Notifikasi & bukti transaksi.</p></div>
+      </div>
+    </section>
+
+    <!-- Keunggulan -->
+    <section id="tab-keunggulan" class="section hidden">
+      <h2 class="h-section text-center md:text-left">Keunggulan</h2>
+      <p class="lede mx-auto md:mx-0 text-center md:text-left">Cepat, aman, terhubung—dirancang untuk skala nasional.</p>
+      <div class="mt-8 grid-3">
+        <div class="card"><h3 class="text-base sm:text-lg font-semibold">Kecepatan</h3><p class="mt-2 text-sm text-white/80">Rata‑rata 15 detik.</p></div>
+        <div class="card"><h3 class="text-base sm:text-lg font-semibold">Keamanan</h3><p class="mt-2 text-sm text-white/80">Standar setara perbankan.</p></div>
+        <div class="card"><h3 class="text-base sm:text-lg font-semibold">Reliabilitas</h3><p class="mt-2 text-sm text-white/80">SLA & monitoring real‑time.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-[var(--bg-2)]/95 border-t border-[var(--border)]">
+    <div class="section">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 text-sm text-white/80">
+        <div><div class="font-semibold text-white">QR‑Tunai Drive</div><p class="mt-2">Fintech Enabler berbasis outlet drive‑thru.</p></div>
+        <div><div class="font-semibold text-white">Layanan</div><ul class="mt-2 space-y-1"><li>Drive‑Thru Banking</li><li>QR Payment System</li><li>Kemitraan Outlet</li></ul></div>
+        <div><div class="font-semibold text-white">Kemitraan</div><ul class="mt-2 space-y-1"><li>Skema Franchise</li><li>Integrasi Bank & Koperasi</li><li>Program Investor</li></ul></div>
+        <div><div class="font-semibold text-white">Kontak</div><ul class="mt-2 space-y-1"><li>Jakarta, Indonesia</li><li>021‑QRTUNAI</li><li>hello@qrtunaidrive.co.id</li></ul></div>
+      </div>
+      <div class="mt-8 h-px bg-white/10"></div>
+      <p class="mt-4 text-center text-xs text-white/60">© 2025 QR‑Tunai — Semua hak cipta dilindungi.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple tabs controller
+    const buttons = document.querySelectorAll('.tab-btn');
+    const sections = document.querySelectorAll('main > section');
+    buttons.forEach(btn=>btn.addEventListener('click',()=>{
+      const id = btn.getAttribute('data-tab');
+      buttons.forEach(b=>b.setAttribute('aria-selected', String(b===btn)));
+      sections.forEach(s=>s.classList.toggle('hidden', s.id !== id));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }));
+  </script>
+</body>
+</html>

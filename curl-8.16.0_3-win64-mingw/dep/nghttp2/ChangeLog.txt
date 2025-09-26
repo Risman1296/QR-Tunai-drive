@@ -1,0 +1,28 @@
+commit 49908f992027821912b96a13898b665a35aa3a0a
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2025-09-15
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2025-09-15
+
+    Update manual pages
+
+commit a1342ac318eba2c4ef7813e08f8a8d077424a914
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2025-09-15
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2025-09-15
+
+    Bump package and library versions
+
+commit c8c97a763259abe81f67034b1e7238218335760b
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2025-09-15
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2025-09-15
+
+    Remove session_update_glitch_ratelim called from deep inside the chain
+    
+    Calling session_update_glitch_ratelim from
+    session_handle_invalid_stream2 makes handling error quite difficult
+    because it might be called in nested function calls.  It seems to me
+    that adding that is accidental.

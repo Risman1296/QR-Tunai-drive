@@ -1,0 +1,336 @@
+commit 8e3523d04bec12cc1fbfd6018d2dc0ef4210148d
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2025-09-24
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2025-09-24
+
+    Bump package and library versions
+
+commit 178947680b4de82ba90eccb046952773acc42125
+Merge: 4bed5af a44cf9a
+Author:     Tatsuhiro Tsujikawa <404610+tatsuhiro-t@users.noreply.github.com>
+AuthorDate: 2025-09-23
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-09-23
+
+    Merge pull request #393 from ngtcp2/fix-macro-comment
+    
+    Fix macro comment
+
+commit a44cf9ab71480e59be378d18e59cd2eeb8e68e58
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2025-09-23
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2025-09-23
+
+    Fix macro comment
+
+commit 4bed5af97d2bb0d61c1680a0ba65ef538ac75902
+Merge: a49a8f5 04b783a
+Author:     Tatsuhiro Tsujikawa <404610+tatsuhiro-t@users.noreply.github.com>
+AuthorDate: 2025-09-14
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-09-14
+
+    Merge pull request #392 from ngtcp2/remove-initial_ts
+    
+    Remove nghttp3_settings.initial_ts
+
+commit 04b783a02ef35c3bfbf51df4116356d690a082ed
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2025-09-14
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2025-09-14
+
+    Remove nghttp3_settings.initial_ts
+    
+    Because the token is still full until the first anomaly is detected,
+    the initial value of timestamp can be 0, that eliminates the need for
+    initial_ts.
+
+commit a49a8f5deed296ed3615cb42d2c49d7ea4ee7089
+Merge: 8926c83 ea435c0
+Author:     Tatsuhiro Tsujikawa <404610+tatsuhiro-t@users.noreply.github.com>
+AuthorDate: 2025-09-13
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-09-13
+
+    Merge pull request #391 from ngtcp2/fix-padding-type
+    
+    tests: Fix type of padding for nghttp3_settings_entry
+
+commit ea435c05ad234756668c1838c19910143ec92e67
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2025-09-13
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2025-09-13
+
+    tests: Fix type of padding for nghttp3_settings_entry
+
+commit 8926c8312fb58598f6eba088e3b0e9025ff5a639
+Merge: 30d607c 53c0bfc
+Author:     Tatsuhiro Tsujikawa <404610+tatsuhiro-t@users.noreply.github.com>
+AuthorDate: 2025-09-13
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-09-13
+
+    Merge pull request #390 from ngtcp2/adopt-nghttp3_conn_read_stream2
+    
+    Use nghttp3_conn_read_stream2 solely
+
+commit 53c0bfc100cb3c8308aa9e6784745764c0fb287a
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2025-09-13
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2025-09-13
+
+    Use nghttp3_conn_read_stream2 solely
+
+commit 30d607c431674f4f24e3719605fc99e583dde534
+Merge: e757c71 0b933c7
+Author:     Tatsuhiro Tsujikawa <404610+tatsuhiro-t@users.noreply.github.com>
+AuthorDate: 2025-09-13
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-09-13
+
+    Merge pull request #389 from ngtcp2/glitch
+    
+    Add glitch protection
+
+commit 0b933c7ecc8a35c65fb74b3ac1ecb7c9ba2f46a6
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2025-09-13
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2025-09-13
+
+    Add glitch protection
+    
+    This commit adds "glitch" counter.  It is a token bucket rate limiter.
+    If a local endpoint detected a suspicious activity from its remote
+    endpoint, the certain amount of tokens are consumed.  If no tokens are
+    available, NGHTTP3_ERR_H3_EXCESSIVE_LOAD error is returned to shutdown
+    the connection.  The burst and rate of limiter are configurable via
+    nghttp3_settings.  To make this work, an application must set
+    nghttp3_settings.initial_ts and use nghttp3_conn_read_stream2.
+
+commit e757c716501653787f4d89f961a228c867e801f8
+Merge: 387ef10 f92be1c
+Author:     Tatsuhiro Tsujikawa <404610+tatsuhiro-t@users.noreply.github.com>
+AuthorDate: 2025-09-11
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-09-11
+
+    Merge pull request #388 from ngtcp2/tstamp
+    
+    Introduce time
+
+commit f92be1cd41eab090c39b4bc1cbb3615fb9d0447b
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2025-09-11
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2025-09-11
+
+    Introduce time
+    
+    This commit introduces time to count certain events in specific
+    duration of time.
+    
+    nghttp3_tstamp is the time instant, and nghttp3_duration is the
+    duration of time.  Both are nanosecond resolution.  Some macros such
+    as NGHTTP3_SECONDS have been introduced for convenience.
+    
+    nghttp3_settings has been extended, and an application should set the
+    initial timestamp to initial_ts field.
+    
+    nghttp3_conn_read_stream has been deprecated in favor of
+    nghttp3_conn_read_stream2 which takes nghttp3_tstamp as a final
+    parameter.
+
+commit 387ef1095ff73dc485588b16487c10d2e4f8d35c
+Merge: 343b1bf abbf288
+Author:     Tatsuhiro Tsujikawa <404610+tatsuhiro-t@users.noreply.github.com>
+AuthorDate: 2025-09-11
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-09-11
+
+    Merge pull request #387 from vszakats/ccpp
+    
+    cmake: do not require C++ for lib-only builds
+
+commit abbf2886fb1f5c4c3fb822e45c082294d70788d9
+Author:     Viktor Szakats <commit@vsz.me>
+AuthorDate: 2025-09-10
+Commit:     Viktor Szakats <commit@vsz.me>
+CommitDate: 2025-09-10
+
+    add comment suggested by Gemini
+
+commit 71d13981f14b186bf633a3bb010f57ee5ea1876d
+Author:     Viktor Szakats <commit@vsz.me>
+AuthorDate: 2025-09-10
+Commit:     Viktor Szakats <commit@vsz.me>
+CommitDate: 2025-09-10
+
+    cmake: do not require C++ for lib-only builds
+
+commit 343b1bf1b3c5513642e438af67161d803058f250
+Merge: 16b5404 65f745c
+Author:     Tatsuhiro Tsujikawa <404610+tatsuhiro-t@users.noreply.github.com>
+AuthorDate: 2025-09-09
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-09-09
+
+    Merge pull request #386 from ngtcp2/delete-qpack-blocked-stream-on-stream-close
+    
+    Delete a stream that is blocked by QPACK on QUIC stream closure
+
+commit 65f745c502baf6c185fdbffa4ac510512bc7cb18
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2025-09-09
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2025-09-09
+
+    Delete a stream that is blocked by QPACK on QUIC stream closure
+    
+    Previously, an nghttp3_stream that is blocked by QPACK is not deleted
+    on QUIC stream closure, and it is deleted once it is unblocked.  But
+    once QUIC stream is closed, we have nothing to do after receiving
+    complete QPACK block.  This change just cancel QPACK, and deletes the
+    nghttp3_stream once QUIC stream is closed even if it is blocked by
+    QPACK.
+
+commit 16b5404d96cd77e8f40535e55be1985e3c67b769
+Merge: 7cc8c7c 1cbe54b
+Author:     Tatsuhiro Tsujikawa <404610+tatsuhiro-t@users.noreply.github.com>
+AuthorDate: 2025-09-09
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-09-09
+
+    Merge pull request #385 from ngtcp2/dependabot/github_actions/actions/github-script-8
+    
+    Bump actions/github-script from 7 to 8
+
+commit 7cc8c7c7a30cf112355e98805594b5a56cc1569c
+Merge: a44b7b3 40bc348
+Author:     Tatsuhiro Tsujikawa <404610+tatsuhiro-t@users.noreply.github.com>
+AuthorDate: 2025-09-09
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-09-09
+
+    Merge pull request #384 from ngtcp2/dependabot/github_actions/actions/stale-10
+    
+    Bump actions/stale from 9 to 10
+
+commit 1cbe54bf104e66b5a9789e0c6cfe06cda5b16327
+Author:     dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+AuthorDate: 2025-09-08
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-09-08
+
+    Bump actions/github-script from 7 to 8
+    
+    Bumps [actions/github-script](https://github.com/actions/github-script) from 7 to 8.
+    - [Release notes](https://github.com/actions/github-script/releases)
+    - [Commits](https://github.com/actions/github-script/compare/v7...v8)
+    
+    ---
+    updated-dependencies:
+    - dependency-name: actions/github-script
+      dependency-version: '8'
+      dependency-type: direct:production
+      update-type: version-update:semver-major
+    ...
+    
+    Signed-off-by: dependabot[bot] <support@github.com>
+
+commit 40bc3487cf833e0716063880e4ea6acdcb9945fa
+Author:     dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+AuthorDate: 2025-09-08
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-09-08
+
+    Bump actions/stale from 9 to 10
+    
+    Bumps [actions/stale](https://github.com/actions/stale) from 9 to 10.
+    - [Release notes](https://github.com/actions/stale/releases)
+    - [Changelog](https://github.com/actions/stale/blob/main/CHANGELOG.md)
+    - [Commits](https://github.com/actions/stale/compare/v9...v10)
+    
+    ---
+    updated-dependencies:
+    - dependency-name: actions/stale
+      dependency-version: '10'
+      dependency-type: direct:production
+      update-type: version-update:semver-major
+    ...
+    
+    Signed-off-by: dependabot[bot] <support@github.com>
+
+commit a44b7b3351c2e9695454a06addf842b374b2fc38
+Merge: e1e8a8d 02afbfa
+Author:     Tatsuhiro Tsujikawa <404610+tatsuhiro-t@users.noreply.github.com>
+AuthorDate: 2025-08-24
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-08-24
+
+    Merge pull request #383 from ngtcp2/clang-19
+    
+    Clang 19
+
+commit 02afbfa91326077761b301fa3ea89d6ca3e1041b
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2025-08-24
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2025-08-24
+
+    Bump clang-format to 19
+
+commit 2f72485ab9b243d7e331f67cb3f3110075fc7224
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2025-08-24
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2025-08-24
+
+    GHA: Bump clang to 19
+
+commit e1e8a8df0d00a24776183ee89a8c7cbb78da265e
+Merge: 5c51368 c19d747
+Author:     Tatsuhiro Tsujikawa <404610+tatsuhiro-t@users.noreply.github.com>
+AuthorDate: 2025-08-17
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-08-17
+
+    Merge pull request #382 from ngtcp2/dependabot/github_actions/actions/checkout-5
+    
+    Bump actions/checkout from 4 to 5
+
+commit c19d7471a06a1e331f7eb3e7aae849e587f01f14
+Author:     dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+AuthorDate: 2025-08-12
+Commit:     GitHub <noreply@github.com>
+CommitDate: 2025-08-12
+
+    Bump actions/checkout from 4 to 5
+    
+    Bumps [actions/checkout](https://github.com/actions/checkout) from 4 to 5.
+    - [Release notes](https://github.com/actions/checkout/releases)
+    - [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md)
+    - [Commits](https://github.com/actions/checkout/compare/v4...v5)
+    
+    ---
+    updated-dependencies:
+    - dependency-name: actions/checkout
+      dependency-version: '5'
+      dependency-type: direct:production
+      update-type: version-update:semver-major
+    ...
+    
+    Signed-off-by: dependabot[bot] <support@github.com>
+
+commit 5c513680a7b6e80d65d672d666a49c54b4ae158a
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2025-07-25
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2025-07-25
+
+    Bump package version
