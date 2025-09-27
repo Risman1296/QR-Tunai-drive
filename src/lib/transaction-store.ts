@@ -1,4 +1,6 @@
 import { randomUUID } from 'crypto';
+import { determineCashFlow } from '@/lib/bank-config';
+import { useFinancialStore } from '@/lib/financial-store';
 
 export type TransactionStatus = 'pending' | 'completed' | 'cancelled';
 
@@ -12,53 +14,15 @@ export interface Transaction {
   notes?: string;
   bank?: string;
   accountNumber?: string;
+  // Tambahan untuk tracking kas dan metode
+  method?: string; // Untuk Tarik Tunai: transfer_outlet, atm, qris; Untuk Transfer: tunai, edc_atm
+  outletBank?: string; // Bank outlet untuk transfer (BCA, BNI, BRI, BTN, MANDIRI)
+  cashFlow?: 'in' | 'out'; // Arus kas masuk atau keluar untuk laporan
 }
 
 // Use a simple in-memory Map to store transactions.
 // In a real-world app, you would use a database (e.g., PostgreSQL, Redis).
 const transactions = new Map<string, Transaction>();
-
-// --- Pre-seed with some dummy data for demonstration ---
-
-const addDummyTransaction = (data: Omit<Transaction, 'id' | 'date'>) => {
-  const id = randomUUID();
-  const newTx: Transaction = {
-    id,
-    date: new Date(),
-    ...data,
-  };
-  transactions.set(id, newTx);
-};
-
-addDummyTransaction({
-  type: 'Pembayaran Digital',
-  customerName: 'Budi Santoso',
-  amount: 75000,
-  status: 'completed',
-  notes: 'Kopi dan 2 Roti'
-});
-addDummyTransaction({
-  type: 'Pembayaran Digital',
-  customerName: 'Siti Aminah',
-  amount: 150000,
-  status: 'completed',
-  notes: 'Makan siang keluarga'
-});
-addDummyTransaction({
-  type: 'Pembayaran Digital',
-  customerName: 'Joko Susilo',
-  amount: 25000,
-  status: 'cancelled',
-  notes: 'Salah input'
-});
-addDummyTransaction({
-  type: 'Pembayaran Digital',
-  customerName: 'Pelanggan',
-  amount: 0, // Pending amount
-  status: 'pending',
-  notes: 'Scan QR untuk membayar'
-});
-
 
 // --- Core Functions ---
 
@@ -70,16 +34,22 @@ export function getTransactionById(id: string): Transaction | undefined {
   return transactions.get(id);
 }
 
-export function addTransaction(data: Omit<Transaction, 'id' | 'date' | 'status'>): Transaction {
+export function addTransaction(data: Omit<Transaction, 'id' | 'date' | 'status' | 'cashFlow'>): Transaction {
   const id = randomUUID();
+  
+  // Auto-calculate cash flow based on transaction type and method
+  const cashFlow = determineCashFlow(data.type, data.method);
+  
   const newTransaction: Transaction = {
     id,
     status: 'pending', // All new transactions start as pending
     date: new Date(),
+    cashFlow,
     ...data,
   };
   transactions.set(id, newTransaction);
   console.log(`Transaction added: ${id}, Total: ${transactions.size}`);
+  console.log('New transaction data:', JSON.stringify(newTransaction, null, 2));
   return newTransaction;
 }
 
@@ -98,11 +68,49 @@ export function updateTransaction(id: string, updateData: Partial<Omit<Transacti
 
     const updatedTransaction = { ...transaction, ...updateData };
     transactions.set(id, updatedTransaction);
+    
+    // Process financial flow when transaction is completed
+    if (updateData.status === 'completed') {
+        processFinancialFlow(updatedTransaction);
+    }
+    
     console.log(`Transaction updated: ${id}`, updatedTransaction);
     return updatedTransaction;
+}
+
+// Process financial implications of a transaction
+function processFinancialFlow(transaction: Transaction) {
+    try {
+        // Access financial store methods
+        const { processTransactionFlow } = useFinancialStore.getState();
+        
+        // Determine transaction type and process accordingly
+        if (transaction.type === 'Tarik Tunai' && transaction.method === 'qris') {
+            processTransactionFlow('cash_withdrawal', transaction.amount, {
+                customerName: transaction.customerName,
+                transactionId: transaction.id,
+                method: 'qris',
+                shiftId: 'current' // You might want to get actual shift ID
+            });
+        } else if (transaction.type.includes('QRIS') || transaction.method === 'qris') {
+            processTransactionFlow('qris_payment', transaction.amount, {
+                customerName: transaction.customerName,
+                transactionId: transaction.id,
+                shiftId: 'current'
+            });
+        }
+    } catch (error) {
+        console.error('Error processing financial flow:', error);
+    }
 }
 
 // A specific function to update only status for clarity in dashboard logic, but uses the generic updater.
 export function updateTransactionStatus(id: string, status: TransactionStatus): Transaction | undefined {
     return updateTransaction(id, { status });
+}
+
+// Clear all transactions (useful for cleanup)
+export function clearAllTransactions(): void {
+    transactions.clear();
+    console.log('All transactions cleared');
 }

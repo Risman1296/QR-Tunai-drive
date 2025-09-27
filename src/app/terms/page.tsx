@@ -19,7 +19,7 @@ export default function TermsPage() {
             <div className="space-y-6 text-muted-foreground">
               <h2 className="text-xl font-semibold text-foreground">1. Penerimaan Ketentuan</h2>
               <p>
-                Dengan menggunakan layanan QR Tunai Drive ("Layanan"), Anda setuju untuk terikat oleh Syarat dan Ketentuan ini. Layanan ini disediakan oleh PT QR Tunai Sejahtera. Jika Anda tidak menyetujui ketentuan ini, Anda tidak boleh menggunakan layanan kami.
+                Dengan menggunakan layanan QR Tunai Drive (&quot;Layanan&quot;), Anda setuju untuk terikat oleh Syarat dan Ketentuan ini. Layanan ini disediakan oleh PT QR Tunai Sejahtera. Jika Anda tidak menyetujui ketentuan ini, Anda tidak boleh menggunakan layanan kami.
               </p>
 
               <h2 className="text-xl font-semibold text-foreground">2. Deskripsi Layanan</h2>
@@ -44,7 +44,7 @@ export default function TermsPage() {
 
                <h2 className="text-xl font-semibold text-foreground">5. Batasan Tanggung Jawab</h2>
               <p>
-                Layanan ini disediakan "sebagaimana adanya". QR Tunai Drive tidak menjamin bahwa layanan akan selalu bebas dari gangguan atau kesalahan. Tanggung jawab kami terbatas pada penyelesaian transaksi sesuai dengan data yang Anda berikan.
+                Layanan ini disediakan &quot;sebagaimana adanya&quot;. QR Tunai Drive tidak menjamin bahwa layanan akan selalu bebas dari gangguan atau kesalahan. Tanggung jawab kami terbatas pada penyelesaian transaksi sesuai dengan data yang Anda berikan.
               </p>
 
               <h2 className="text-xl font-semibold text-foreground">6. Perubahan Ketentuan</h2>

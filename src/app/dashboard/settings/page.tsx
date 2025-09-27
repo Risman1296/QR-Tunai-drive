@@ -1,4 +1,7 @@
 
+'use client';
+
+import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -19,16 +22,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { MoreHorizontal, PlusCircle, ShieldAlert } from "lucide-react"
+import { MoreHorizontal, ShieldAlert, Lock, Save, Eye, EyeOff } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-
-const users = [
-    { id: "USR001", name: "Owner Utama", username: "owner", role: "Owner", status: "Active" },
-    { id: "USR002", name: "Kasir Pagi", username: "kasir01", role: "Cashier", status: "Active" },
-    { id: "USR003", name: "Kasir Malam", username: "kasir02", role: "Cashier", status: "Inactive" },
-]
+import { useToast } from "@/hooks/use-toast"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import PaymentAccountSettings from '@/components/payment-account-settings';
+import PinProtection from '@/components/pin-protection';
+import { usePinStore } from '@/lib/pin-store';
 
 const feeSettings = [
     { id: "FEE01", type: "Transfer Antar Bank", fee: "Rp 6.500", status: true },
@@ -38,86 +40,405 @@ const feeSettings = [
 ]
 
 export default function SettingsPage() {
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const { toast } = useToast();
+
+  // PIN-related state
+  const { setAdminPin, verifyPin } = usePinStore();
+  const [showPinField, setShowPinField] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  });
+  const [pinData, setPinData] = useState({
+    currentPin: '',
+    newPin: '',
+    confirmPin: ''
+  });
+  const [isChangingPin, setIsChangingPin] = useState(false);
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Password change form submitted');
+    setIsChangingPassword(true);
+
+    try {
+      console.log('Sending password change request');
+      const response = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(passwordData),
+      });
+
+      const data = await response.json();
+      console.log('Password change response:', data);
+
+      if (response.ok) {
+        toast({
+          title: 'Berhasil',
+          description: data.message,
+        });
+        setPasswordData({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: data.error,
+        });
+      }
+    } catch (error) {
+      console.error('Password change error:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Terjadi kesalahan saat mengubah password',
+      });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const handlePinChange = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('PIN change form submitted');
+    setIsChangingPin(true);
+
+    try {
+      console.log('Current PIN data:', pinData);
+      // Validate current PIN
+      if (!verifyPin(pinData.currentPin)) {
+        console.log('Current PIN verification failed');
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'PIN lama tidak sesuai',
+        });
+        setIsChangingPin(false);
+        return;
+      }
+
+      console.log('Current PIN verification passed');
+
+      // Validate PIN requirements
+      if (pinData.newPin.length < 4) {
+        console.log('New PIN too short');
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'PIN baru harus minimal 4 karakter',
+        });
+        setIsChangingPin(false);
+        return;
+      }
+
+      if (pinData.newPin !== pinData.confirmPin) {
+        console.log('PIN confirmation mismatch');
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Konfirmasi PIN tidak cocok',
+        });
+        setIsChangingPin(false);
+        return;
+      }
+
+      console.log('All PIN validations passed, updating PIN');
+      // Update PIN
+      setAdminPin(pinData.newPin);
+      console.log('PIN updated successfully');
+      
+      toast({
+        title: 'Berhasil',
+        description: 'PIN akses berhasil diubah',
+      });
+
+      // Reset form
+      setPinData({
+        currentPin: '',
+        newPin: '',
+        confirmPin: ''
+      });
+    } catch (error) {
+      console.error('PIN change error:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Terjadi kesalahan saat mengubah PIN',
+      });
+    } finally {
+      setIsChangingPin(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Pengaturan</h1>
-        <p className="text-muted-foreground">
-          Kelola pengguna, tarif, dan konfigurasi outlet Anda.
-        </p>
-      </div>
+    <PinProtection>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Pengaturan</h1>
+          <p className="text-muted-foreground">
+            Kelola tarif dan konfigurasi outlet Anda.
+          </p>
+        </div>
 
-       <Alert variant="destructive" className="border-yellow-500/50 text-yellow-600 dark:border-yellow-500 [&>svg]:text-yellow-600">
-          <ShieldAlert className="h-4 w-4" />
-          <AlertTitle>Halaman Terbatas</AlertTitle>
-          <AlertDescription>
-            Hanya pengguna dengan peran "Owner" yang dapat melihat dan mengubah pengaturan ini.
-          </AlertDescription>
-        </Alert>
+        <Alert variant="destructive" className="border-yellow-500/50 text-yellow-600 dark:border-yellow-500 [&>svg]:text-yellow-600">
+            <ShieldAlert className="h-4 w-4" />
+            <AlertTitle>Halaman Terbatas</AlertTitle>
+            <AlertDescription>
+              Hanya pengguna dengan peran "Owner" yang dapat melihat dan mengubah pengaturan ini.
+            </AlertDescription>
+          </Alert>
 
-      <Tabs defaultValue="users" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="users">Pengguna</TabsTrigger>
-          <TabsTrigger value="fees">Tarif</TabsTrigger>
-          <TabsTrigger value="payment">Akun Pembayaran</TabsTrigger>
-          <TabsTrigger value="outlet">Outlet</TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="security" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="security">Keamanan</TabsTrigger>
+            <TabsTrigger value="fees">Tarif</TabsTrigger>
+            <TabsTrigger value="payment">Akun Pembayaran</TabsTrigger>
+            <TabsTrigger value="outlet">Outlet</TabsTrigger>
+          </TabsList>
         
-        <TabsContent value="users">
-          <Card>
-            <CardHeader>
-              <CardTitle>Pengguna Sistem</CardTitle>
-              <CardDescription>
-                Tambah, lihat, dan kelola akun yang dapat mengakses dasbor kasir.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="flex justify-end">
-                    <Button>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Tambah Pengguna
+        <TabsContent value="security">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Lock className="mr-2 h-5 w-5" />
+                  Ubah Password
+                </CardTitle>
+                <CardDescription>
+                  Ubah password akun Anda untuk menjaga keamanan sistem
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
+                  <div className="space-y-2">
+                    <Label htmlFor="currentPassword">Password Saat Ini</Label>
+                    <div className="relative">
+                      <Input
+                        id="currentPassword"
+                        type={showPassword.current ? "text" : "password"}
+                        value={passwordData.currentPassword}
+                        onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8"
+                        onClick={() => setShowPassword(prev => ({ ...prev, current: !prev.current }))}
+                      >
+                        {showPassword.current ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="newPassword">Password Baru</Label>
+                    <div className="relative">
+                      <Input
+                        id="newPassword"
+                        type={showPassword.new ? "text" : "password"}
+                        value={passwordData.newPassword}
+                        onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8"
+                        onClick={() => setShowPassword(prev => ({ ...prev, new: !prev.new }))}
+                      >
+                        {showPassword.new ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Konfirmasi Password Baru</Label>
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        type={showPassword.confirm ? "text" : "password"}
+                        value={passwordData.confirmPassword}
+                        onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8"
+                        onClick={() => setShowPassword(prev => ({ ...prev, confirm: !prev.confirm }))}
+                      >
+                        {showPassword.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 pt-4">
+                    <Button type="submit" disabled={isChangingPassword}>
+                      <Save className="mr-2 h-4 w-4" />
+                      {isChangingPassword ? 'Mengubah...' : 'Ubah Password'}
                     </Button>
+                    <Button type="button" variant="outline" onClick={handleLogout}>
+                      Logout
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <ShieldAlert className="mr-2 h-5 w-5" />
+                  Ubah PIN Akses
+                </CardTitle>
+                <CardDescription>
+                  Ubah PIN untuk mengakses halaman pengaturan dan manajemen shift
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handlePinChange} className="space-y-4 max-w-md">
+                  <div className="space-y-2">
+                    <Label htmlFor="currentPin">PIN Saat Ini</Label>
+                    <div className="relative">
+                      <Input
+                        id="currentPin"
+                        type={showPinField.current ? "text" : "password"}
+                        value={pinData.currentPin}
+                        onChange={(e) => setPinData(prev => ({ ...prev, currentPin: e.target.value }))}
+                        maxLength={10}
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8"
+                        onClick={() => setShowPinField(prev => ({ ...prev, current: !prev.current }))}
+                      >
+                        {showPinField.current ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="newPin">PIN Baru</Label>
+                    <div className="relative">
+                      <Input
+                        id="newPin"
+                        type={showPinField.new ? "text" : "password"}
+                        value={pinData.newPin}
+                        onChange={(e) => setPinData(prev => ({ ...prev, newPin: e.target.value }))}
+                        maxLength={10}
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8"
+                        onClick={() => setShowPinField(prev => ({ ...prev, new: !prev.new }))}
+                      >
+                        {showPinField.new ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPin">Konfirmasi PIN Baru</Label>
+                    <div className="relative">
+                      <Input
+                        id="confirmPin"
+                        type={showPinField.confirm ? "text" : "password"}
+                        value={pinData.confirmPin}
+                        onChange={(e) => setPinData(prev => ({ ...prev, confirmPin: e.target.value }))}
+                        maxLength={10}
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8"
+                        onClick={() => setShowPinField(prev => ({ ...prev, confirm: !prev.confirm }))}
+                      >
+                        {showPinField.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 pt-4">
+                    <Button type="submit" disabled={isChangingPin}>
+                      <Save className="mr-2 h-4 w-4" />
+                      {isChangingPin ? 'Mengubah...' : 'Ubah PIN'}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Informasi Keamanan</CardTitle>
+                <CardDescription>
+                  Informasi penting terkait keamanan akun
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Status Login</Label>
+                    <Badge className="bg-green-100 text-green-800 border-green-300">
+                      Aktif
+                    </Badge>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Sesi Login</Label>
+                    <p className="text-sm text-muted-foreground">24 jam</p>
+                  </div>
                 </div>
-               <div className="rounded-md border">
-                <Table>
-                    <TableHeader>
-                    <TableRow>
-                        <TableHead>Nama</TableHead>
-                        <TableHead>Username</TableHead>
-                        <TableHead>Peran</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead><span className="sr-only">Aksi</span></TableHead>
-                    </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                    {users.map((user) => (
-                        <TableRow key={user.id}>
-                        <TableCell className="font-medium">{user.name}</TableCell>
-                        <TableCell>{user.username}</TableCell>
-                        <TableCell>
-                            <Badge variant={user.role === "Owner" ? "default" : "secondary"} className={user.role === 'Owner' ? 'bg-accent text-accent-foreground' : ''}>
-                                {user.role}
-                            </Badge>
-                        </TableCell>
-                        <TableCell>
-                            <Badge variant={user.status === "Active" ? "default" : "secondary"} className={user.status === 'Active' ? 'bg-green-600' : ''}>
-                                {user.status}
-                            </Badge>
-                        </TableCell>
-                        <TableCell>
-                            <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </TableCell>
-                        </TableRow>
-                    ))}
-                    </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+                <Alert>
+                  <ShieldAlert className="h-4 w-4" />
+                  <AlertTitle>Tips Keamanan</AlertTitle>
+                  <AlertDescription>
+                    • Gunakan password minimal 6 karakter<br/>
+                    • Jangan bagikan password kepada orang lain<br/>
+                    • Logout setelah selesai menggunakan sistem
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
-
+        
         <TabsContent value="fees">
            <Card>
             <CardHeader>
@@ -157,83 +478,95 @@ export default function SettingsPage() {
         </TabsContent>
         
         <TabsContent value="payment">
-          <Card>
-            <CardHeader>
-              <CardTitle>Akun Pembayaran Outlet</CardTitle>
-              <CardDescription>
-                Atur rekening bank dan kode QRIS yang akan ditampilkan kepada pelanggan di formulir transaksi.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                        <h3 className="font-medium">Rekening Bank untuk Transfer</h3>
-                        <div className="space-y-2">
-                            <Label htmlFor="bankName">Nama Bank</Label>
-                            <Input id="bankName" defaultValue="Bank QR Tunai" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="accountNumber">Nomor Rekening</Label>
-                            <Input id="accountNumber" defaultValue="123-456-7890" />
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="accountHolder">Nama Pemilik Rekening</Label>
-                            <Input id="accountHolder" defaultValue="PT QR Tunai Sejahtera" />
-                        </div>
-                    </div>
-                    <div className="space-y-4">
-                        <h3 className="font-medium">Kode QRIS</h3>
-                        <div className="space-y-2">
-                            <Label htmlFor="qrisUrl">URL Gambar QRIS</Label>
-                            <Input id="qrisUrl" defaultValue="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=example" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Pratinjau QRIS</Label>
-                            <div className="p-2 border rounded-md bg-white w-fit">
-                                <Image src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=example" data-ai-hint="QR code" alt="QRIS Code" width={150} height={150} />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                 <div className="flex justify-end pt-4">
-                    <Button>Simpan Akun Pembayaran</Button>
-                </div>
-            </CardContent>
-          </Card>
+          <PaymentAccountSettings />
         </TabsContent>
 
         <TabsContent value="outlet">
-          <Card>
-            <CardHeader>
-              <CardTitle>Konfigurasi Outlet</CardTitle>
-              <CardDescription>
-                Pengaturan teknis untuk integrasi dan operasional outlet.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 max-w-lg">
-                <div className="space-y-2">
-                    <Label htmlFor="outletId">ID Outlet</Label>
-                    <Input id="outletId" defaultValue="LC-PST" />
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Konfigurasi Outlet</CardTitle>
+                <CardDescription>
+                  Pengaturan teknis untuk integrasi dan operasional outlet.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 max-w-lg">
+                  <div className="space-y-2">
+                      <Label htmlFor="outletId">ID Outlet</Label>
+                      <Input id="outletId" defaultValue="LC-PST" />
+                  </div>
+                  <div className="space-y-2">
+                      <Label htmlFor="apiUrl">API Base URL</Label>
+                      <Input id="apiUrl" defaultValue="https://api.qrtunaidrive.com/v1" />
+                  </div>
+                  <div className="space-y-2">
+                      <Label htmlFor="adminToken">Token Admin</Label>
+                      <Input id="adminToken" type="password" defaultValue="supersecrettoken" />
+                  </div>
+                  <div className="flex items-center space-x-2 pt-2">
+                      <Switch id="sound-notification" defaultChecked={true}/>
+                      <Label htmlFor="sound-notification">Aktifkan Notifikasi Suara</Label>
+                  </div>
+                  <div className="flex justify-end pt-4">
+                      <Button>Simpan Konfigurasi</Button>
+                  </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Backup Data</CardTitle>
+                <CardDescription>
+                  Backup dan restore data transaksi dan pengaturan sistem
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-4">
+                    <h4 className="font-medium">Backup Data</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Download backup data transaksi dan pengaturan dalam format JSON
+                    </p>
+                    <Button onClick={() => window.open('/api/admin/backup', '_blank')}>
+                      <Save className="mr-2 h-4 w-4" />
+                      Download Backup
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h4 className="font-medium">Informasi Sistem</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Versi:</span>
+                        <span>v1.0.0</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Last Backup:</span>
+                        <span>Belum pernah</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Environment:</span>
+                        <span>Development</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="apiUrl">API Base URL</Label>
-                    <Input id="apiUrl" defaultValue="https://api.qrtunaidrive.com/v1" />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="adminToken">Token Admin</Label>
-                    <Input id="adminToken" type="password" defaultValue="supersecrettoken" />
-                </div>
-                <div className="flex items-center space-x-2 pt-2">
-                    <Switch id="sound-notification" defaultChecked={true}/>
-                    <Label htmlFor="sound-notification">Aktifkan Notifikasi Suara</Label>
-                </div>
-                <div className="flex justify-end pt-4">
-                    <Button>Simpan Konfigurasi</Button>
-                </div>
-            </CardContent>
-          </Card>
+                
+                <Alert>
+                  <ShieldAlert className="h-4 w-4" />
+                  <AlertTitle>Penting</AlertTitle>
+                  <AlertDescription>
+                    • Lakukan backup secara berkala untuk menjaga keamanan data<br/>
+                    • Simpan file backup di tempat yang aman<br/>
+                    • Hanya owner yang dapat melakukan backup data
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
+    </PinProtection>
   )
 }

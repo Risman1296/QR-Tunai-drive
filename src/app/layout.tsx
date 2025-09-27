@@ -3,9 +3,22 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 
+// Initialize WiFi automation on app startup (server-side only)
+import '@/lib/wifi-startup';
+
 export const metadata: Metadata = {
   title: 'QR Tunai Drive',
   description: 'Transaksi keuangan cepat, aman, dan nyaman melalui drive-thru.',
+  icons: {
+    icon: '/favicon.svg',
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: 'cover',
+  },
 };
 
 export default function RootLayout({
@@ -23,7 +36,7 @@ export default function RootLayout({
       <body className="font-sans antialiased h-full">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >

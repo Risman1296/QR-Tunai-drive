@@ -4,8 +4,9 @@ import { getTransactionById, updateTransaction, TransactionStatus } from '@/lib/
 // GET a single transaction by ID
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params;
   try {
     const transaction = getTransactionById(params.id);
     if (!transaction) {
@@ -22,8 +23,9 @@ export async function GET(
 // UPDATE a transaction (either by customer or cashier)
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params;
   try {
     const { id } = params;
     const body = await req.json();
@@ -39,7 +41,7 @@ export async function PUT(
       );
     }
 
-    let updateData: { status?: TransactionStatus; customerName?: string; amount?: number } = {};
+    const updateData: { status?: TransactionStatus; customerName?: string; amount?: number } = {};
 
     if (isStatusUpdate) {
         // Update from Cashier Dashboard (e.g., completing or cancelling)

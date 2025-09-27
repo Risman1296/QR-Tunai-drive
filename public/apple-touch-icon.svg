@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Background -->
+  <rect width="24" height="24" x="0" y="0" fill="white" rx="4"/>
+  
+  <!-- QR Code Icon -->
+  <rect width="5" height="5" x="3" y="3" rx="1" fill="#2563eb"/>
+  <rect width="5" height="5" x="16" y="3" rx="1" fill="#2563eb"/>
+  <rect width="5" height="5" x="3" y="16" rx="1" fill="#2563eb"/>
+  <path d="m5 5 2 2" stroke="#2563eb" stroke-width="1.5"/>
+  <path d="m5 17 2 2" stroke="#2563eb" stroke-width="1.5"/>
+  <path d="m17 5 2 2" stroke="#2563eb" stroke-width="1.5"/>
+  <circle cx="13.5" cy="13.5" r="0.5" fill="#2563eb"/>
+  <circle cx="17.5" cy="13.5" r="0.5" fill="#2563eb"/>
+  <circle cx="13.5" cy="17.5" r="0.5" fill="#2563eb"/>
+  <circle cx="17.5" cy="17.5" r="0.5" fill="#2563eb"/>
+  <circle cx="21.5" cy="13.5" r="0.5" fill="#2563eb"/>
+  <circle cx="21.5" cy="17.5" r="0.5" fill="#2563eb"/>
+  <circle cx="21.5" cy="21.5" r="0.5" fill="#2563eb"/>
+</svg>

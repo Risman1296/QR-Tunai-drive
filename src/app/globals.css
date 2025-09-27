@@ -4,39 +4,46 @@
 
 @layer base {
   :root {
-    --background: 0 0% 94.1%; /* #F0F0F0 */
-    --foreground: 240 10% 3.9%;
+    /* QR-Tunai Brand Colors */
+    --qr-blue: 239 68% 68%; /* #4f46e5 */
+    --qr-yellow: 39 96% 55%; /* #f59e0b */
+    
+    --background: 0 0% 98%; /* Very light background */
+    --foreground: 239 68% 15%; /* Dark blue text */
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 239 68% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 197 76% 53%; /* #29ABE2 */
+    --popover-foreground: 239 68% 15%;
+    --primary: 239 68% 68%; /* QR-Tunai Blue */
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 240 10% 3.9%;
-    --muted: 0 0% 90%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 33 100% 50%; /* #FF8C00 */
-    --accent-foreground: 0 0% 100%;
+    --secondary: 39 96% 55%; /* QR-Tunai Yellow */
+    --secondary-foreground: 239 68% 15%;
+    --muted: 218 50% 95%;
+    --muted-foreground: 239 35% 45%;
+    --accent: 39 96% 55%; /* QR-Tunai Yellow */
+    --accent-foreground: 239 68% 15%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 197 76% 53%;
-    --radius: 0.5rem;
-    --chart-1: 197 76% 53%;
-    --chart-2: 33 100% 50%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --border: 218 50% 90%;
+    --input: 218 50% 90%;
+    --ring: 239 68% 68%; /* QR-Tunai Blue */
+    --radius: 0.75rem;
+    
+    /* Chart colors using QR-Tunai palette */
+    --chart-1: 239 68% 68%; /* Blue */
+    --chart-2: 39 96% 55%; /* Yellow */
+    --chart-3: 239 45% 45%; /* Darker blue */
+    --chart-4: 39 85% 65%; /* Lighter yellow */
+    --chart-5: 218 50% 65%; /* Complementary blue */
+    
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 240 10% 3.9%;
-    --sidebar-primary: 197 76% 53%;
+    --sidebar-foreground: 239 68% 15%;
+    --sidebar-primary: 239 68% 68%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 94.1%;
-    --sidebar-accent-foreground: 240 10% 3.9%;
-    --sidebar-border: 0 0% 89.8%;
-    --sidebar-ring: 197 76% 53%;
+    --sidebar-accent: 39 96% 92%;
+    --sidebar-accent-foreground: 239 68% 15%;
+    --sidebar-border: 218 50% 90%;
+    --sidebar-ring: 239 68% 68%;
   }
  
   .dark {
@@ -81,5 +88,45 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Mobile Safe Area and Viewport Fixes */
+@layer utilities {
+  .pt-safe-top {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+  .pb-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .min-h-screen-safe {
+    min-height: calc(100vh - env(safe-area-inset-top, 0) - env(safe-area-inset-bottom, 0));
+  }
+}
+
+/* Improved mobile input handling */
+@layer components {
+  .mobile-optimized {
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+  }
+  
+  /* Ensure form inputs are accessible on mobile */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  /* Prevent zoom on input focus for iOS */
+  @media screen and (max-width: 768px) {
+    input[type="text"],
+    input[type="number"],
+    input[type="tel"],
+    input[type="email"],
+    select,
+    textarea {
+      font-size: 16px;
+    }
   }
 }

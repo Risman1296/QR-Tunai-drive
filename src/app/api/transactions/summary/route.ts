@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getTransactions } from '@/lib/transaction-store';
+import { getTransactions, Transaction } from '@/lib/transaction-store';
 
 export const dynamic = 'force-dynamic';
 
-function calculateSummary(transactions: any[]) {
+function calculateSummary(transactions: Transaction[]) {
   const totalRevenue = transactions
     .filter(tx => tx.status === 'completed')
     .reduce((sum, tx) => sum + tx.amount, 0);

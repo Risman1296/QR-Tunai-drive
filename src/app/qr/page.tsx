@@ -13,65 +13,132 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { GenerateQrCodeOutput } from '@/ai/flows/qr-code-flow';
 
-const QR_ROTATION_TTL = 120; // in seconds
+interface QRCodeData {
+  qrCodeDataUrl: string;
+  token: string;
+  expiresAt: number;
+  id: string;
+  transactionUrl: string;
+  expiresIn: number;
+}
 
 export default function QrPage() {
-  const [qrData, setQrData] = useState<GenerateQrCodeOutput | null>(null);
+  const [qrData, setQrData] = useState<QRCodeData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [timer, setTimer] = useState(QR_ROTATION_TTL);
+  const [tokenStatus, setTokenStatus] = useState<'available' | 'accessed' | 'used'>('available');
   const { toast } = useToast();
 
   const fetchQrCode = useCallback(async () => {
     setIsLoading(true);
-    setTimer(QR_ROTATION_TTL);
     try {
-      const baseUrl = window.location.origin;
+      console.log('🔄 Generating new QR code (triggered by customer access)...');
+      
       const response = await fetch('/api/qr', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ baseUrl }),
+        body: JSON.stringify({
+          amount: 50000,
+          description: 'Drive-Thru Payment'
+        })
       });
 
+      console.log('📡 API Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error(`API call failed with status: ${response.status}`);
+        const errorData = await response.text();
+        console.error('❌ API Error:', errorData);
+        throw new Error(`Server error: ${response.status} - ${errorData}`);
       }
 
-      const result = await response.json();
-      setQrData(result);
+      const data = await response.json();
+      console.log('✅ API Response data:', {
+        id: data.id,
+        hasQrCode: !!data.qrCodeDataUrl,
+        qrCodeLength: data.qrCodeDataUrl?.length,
+        expiresIn: data.expiresIn
+      });
+      
+      if (!data.qrCodeDataUrl) {
+        console.error('❌ Missing qrCodeDataUrl in response:', data);
+        throw new Error('QR code data not received from server');
+      }
+
+      if (!data.id) {
+        console.error('❌ Missing ID in response:', data);
+        throw new Error('Transaction ID not received from server');
+      }
+      
+      setQrData(data);
+      setTokenStatus('available');
+      
+      console.log('✅ QR code generated successfully');
     } catch (error) {
-      console.error('Error generating QR code:', error);
+      console.error('❌ Error generating QR:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       setQrData(null);
       toast({
         variant: 'destructive',
         title: 'Gagal Membuat QR Code',
-        description: 'Terjadi kesalahan saat mencoba membuat QR code baru.',
+        description: `Terjadi kesalahan: ${errorMessage}`,
       });
+      
+      // Retry automatically after 5 seconds
+      setTimeout(() => {
+        console.log('🔄 Retrying QR generation...');
+        fetchQrCode();
+      }, 5000);
     } finally {
       setIsLoading(false);
     }
   }, [toast]);
 
+  // Generate QR code automatically when page loads
   useEffect(() => {
     fetchQrCode();
   }, [fetchQrCode]);
 
+  // Poll token status and generate new QR when customer accesses form
   useEffect(() => {
-    if (isLoading) return;
-    const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          fetchQrCode();
-          return QR_ROTATION_TTL;
+    if (!qrData?.id) return;
+
+    const checkTokenStatus = async () => {
+      try {
+        // Check if QR is still valid by trying to fetch transaction status
+        const response = await fetch(`/api/transactions/${qrData.id}`);
+        
+        if (response.status === 404) {
+          // Transaction not found, generate new QR
+          console.log('🔄 Transaction not found, generating new QR');
+          setTimeout(() => fetchQrCode(), 1000);
+        } else if (response.ok) {
+          const data = await response.json();
+          
+          if (data.status && data.status !== tokenStatus) {
+            console.log(`🔄 Status changed from ${tokenStatus} to ${data.status}`);
+            setTokenStatus(data.status as 'available' | 'accessed' | 'used');
+            
+            // Generate new QR when customer accesses the form or completes transaction
+            if (data.status === 'accessed') {
+              console.log('👤 Customer accessed form, generating new QR in 3 seconds...');
+              setTimeout(() => fetchQrCode(), 3000);
+            } else if (data.status === 'completed' || data.status === 'used') {
+              console.log('✅ Transaction completed, generating new QR in 2 seconds...');
+              setTimeout(() => fetchQrCode(), 2000);
+            }
+          }
         }
-        return prev - 1;
-      });
-    }, 1000);
+      } catch (error) {
+        console.error('Error checking token status:', error);
+        // If there's an error, just continue with current status
+      }
+    };
+
+    const interval = setInterval(checkTokenStatus, 2000); // Check every 2 seconds for faster response
     return () => clearInterval(interval);
-  }, [isLoading, fetchQrCode]);
+  }, [qrData?.id, tokenStatus, fetchQrCode]);
 
   const handleCopy = () => {
     if (qrData?.transactionUrl) {
@@ -99,7 +166,6 @@ export default function QrPage() {
       document.documentElement.requestFullscreen();
     }
   };
-
 
   return (
     <div className="flex h-screen w-screen flex-col items-center justify-center bg-background text-foreground p-4">
@@ -150,8 +216,7 @@ export default function QrPage() {
       <div className="mt-8 text-sm text-muted-foreground text-center max-w-md">
         <p className="font-mono break-all p-2 bg-muted rounded-md">{qrData?.transactionUrl || 'Memuat link...'}</p>
         <p className="mt-4">
-          QR code akan diperbarui dalam{' '}
-          <span className="font-bold text-primary">{timer}</span> detik.
+          QR akan berubah ketika pelanggan mengakses form transaksi.
           <br />
           Jika kamera gagal memindai, salin link di atas.
         </p>

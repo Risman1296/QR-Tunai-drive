@@ -10,6 +10,10 @@ export type Transaction = {
   status: 'Pending' | 'Completed' | 'Cancelled';
   date: Date;
   cashier?: string;
+  // Tambahan untuk tracking kas dan metode
+  method?: string; // Untuk Tarik Tunai: transfer_outlet, atm, qris; Untuk Transfer: tunai, edc_atm
+  outletBank?: string; // Bank outlet untuk transfer (BCA, BNI, BRI, BTN, MANDIRI)
+  cashFlow?: 'in' | 'out'; // Arus kas masuk atau keluar untuk laporan
 };
 
 export const pendingTransactions: Transaction[] = [
@@ -141,6 +145,8 @@ export type BankAccount = {
   history: BankAccountHistory[];
 }
 
+import { INDONESIAN_BANK_LOGOS } from '@/lib/bank-logos';
+
 export const bankAccounts: BankAccount[] = [
   {
     id: 'bca',
@@ -148,7 +154,7 @@ export const bankAccounts: BankAccount[] = [
     accountNumber: '123-456-7890',
     accountHolder: 'Outlet Pusat QR Tunai',
     balance: 150750000,
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia_logo.svg',
+    logo: `data:image/svg+xml;base64,${btoa(INDONESIAN_BANK_LOGOS.BCA)}`,
     history: [
       { id: 'BCA01', description: 'Trf dari Rina S.', amount: 500000, type: 'credit', time: '10:15' },
       { id: 'BCA02', description: 'Bayar listrik', amount: -750000, type: 'debit', time: '09:30' },
@@ -161,7 +167,7 @@ export const bankAccounts: BankAccount[] = [
     accountNumber: '098-765-4321',
     accountHolder: 'Outlet Pusat QR Tunai',
     balance: 85200000,
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Bank_Mandiri_logo_2016.svg',
+    logo: `data:image/svg+xml;base64,${btoa(INDONESIAN_BANK_LOGOS.MANDIRI)}`,
     history: [
       { id: 'MDR01', description: 'Trf dari CV Maju', amount: 1250000, type: 'credit', time: '10:05' },
       { id: 'MDR02', description: 'Setoran tunai', amount: 5000000, type: 'credit', time: '09:00' },
@@ -174,7 +180,7 @@ export const bankAccounts: BankAccount[] = [
     accountNumber: '111-222-3334',
     accountHolder: 'Outlet Pusat QR Tunai',
     balance: 112300000,
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/6/68/BANK_BRI_logo.svg',
+    logo: `data:image/svg+xml;base64,${btoa(INDONESIAN_BANK_LOGOS.BRI)}`,
     history: [
       { id: 'BRI01', description: 'Trf dari Siti A.', amount: 2000000, type: 'credit', time: '11:50' },
       { id: 'BRI02', description: 'Tarik Tunai TXN123', amount: -500000, type: 'debit', time: '11:45' },
@@ -191,7 +197,7 @@ export const bankAccounts: BankAccount[] = [
     accountNumber: '777-888-9990',
     accountHolder: 'Outlet Pusat QR Tunai',
     balance: 78500000,
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/a/a0/Bank_Syariah_Indonesia_logo.svg',
+    logo: `data:image/svg+xml;base64,${btoa(INDONESIAN_BANK_LOGOS.BSI)}`,
     history: [
       { id: 'BSI01', description: 'Setoran Nasabah', amount: 1500000, type: 'credit', time: '11:00' },
       { id: 'BSI02', description: 'Pembelian ATK', amount: -250000, type: 'debit', time: '09:10' },
@@ -204,7 +210,7 @@ export const bankAccounts: BankAccount[] = [
     accountNumber: '444-555-6667',
     accountHolder: 'Outlet Pusat QR Tunai',
     balance: 95100000,
-    logo: 'https://upload.wikimedia.org/wikipedia/id/5/55/BNI_logo.svg',
+    logo: `data:image/svg+xml;base64,${btoa(INDONESIAN_BANK_LOGOS.BNI)}`,
     history: [
       { id: 'BNI01', description: 'Trf dari PT Abadi', amount: 10000000, type: 'credit', time: '10:45' },
       { id: 'BNI02', description: 'Tarik tunai nasabah', amount: -2000000, type: 'debit', time: '10:00' },
@@ -217,7 +223,7 @@ export const bankAccounts: BankAccount[] = [
     accountNumber: '222-333-4445',
     accountHolder: 'Outlet Pusat QR Tunai',
     balance: 62000000,
-    logo: 'https://upload.wikimedia.org/wikipedia/id/b/b3/Bank_Tabungan_Negara_logo.svg',
+    logo: `data:image/svg+xml;base64,${btoa(INDONESIAN_BANK_LOGOS.BTN)}`,
     history: [
       { id: 'BTN01', description: 'Kredit Angsuran', amount: 850000, type: 'credit', time: '11:20' },
       { id: 'BTN02', description: 'Biaya admin', amount: -15000, type: 'debit', time: 'Yesterday' },

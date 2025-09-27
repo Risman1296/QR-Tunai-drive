@@ -1,0 +1,26 @@
+# SSH Config untuk QR-Tunai Server
+# File ini akan disimpan di ~/.ssh/config
+
+# QR-Tunai Production Server
+Host qr-tunai-server
+    HostName YOUR_SERVER_IP
+    User YOUR_SERVER_USERNAME
+    Port 22
+    IdentityFile ~/.ssh/id_rsa
+    ForwardAgent yes
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+# Contoh konfigurasi alternatif
+# Host qr-production
+#     HostName 192.168.1.100
+#     User root
+#     Port 22
+#     IdentityFile ~/.ssh/qr_tunai_key
+#     ForwardAgent yes
+
+# Host qr-ubuntu
+#     HostName your-domain.com
+#     User ubuntu
+#     Port 22
+#     IdentityFile ~/.ssh/aws_key.pem
