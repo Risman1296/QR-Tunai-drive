@@ -12,6 +12,27 @@ import {
   DEFAULT_CASH_ACCOUNTS
 } from './financial-types';
 
+// Detail types for transaction flows
+type CashWithdrawalDetails = {
+  method: 'qris';
+  customerName?: string;
+  transactionId?: string;
+  shiftId?: string;
+};
+
+type QrisPaymentDetails = {
+  customerName?: string;
+  transactionId?: string;
+  shiftId?: string;
+};
+
+type TransferDetails = {
+  fromAccountId: string;
+  toAccountId: string;
+  shiftId?: string;
+  notes?: string;
+};
+
 interface FinancialState {
   // Accounts
   bankAccounts: BankAccount[];
@@ -40,11 +61,12 @@ interface FinancialState {
   
   // Transaction management
   addTransaction: (transaction: Omit<FinancialTransaction, 'id' | 'date'>) => void;
-  processTransactionFlow: (
-    transactionType: 'cash_withdrawal' | 'qris_payment' | 'transfer',
-    amount: number,
-    details: any
-  ) => void;
+  // Overloads for better type safety
+  processTransactionFlow: {
+    (transactionType: 'cash_withdrawal', amount: number, details: CashWithdrawalDetails): void;
+    (transactionType: 'qris_payment', amount: number, details: QrisPaymentDetails): void;
+    (transactionType: 'transfer', amount: number, details: TransferDetails): void;
+  };
   
   // Shift financial management
   startShiftFinancials: (shiftId: string, userId: string, userName: string) => void;
@@ -153,60 +175,54 @@ export const useFinancialStore = create<FinancialState>()(
         }));
       },
       
-      processTransactionFlow: (transactionType, amount, details) => {
+      processTransactionFlow: (
+        transactionType: 'cash_withdrawal' | 'qris_payment' | 'transfer',
+        amount: number,
+        details: CashWithdrawalDetails | QrisPaymentDetails | TransferDetails
+      ) => {
         const state = get();
-        
         switch (transactionType) {
-          case 'cash_withdrawal':
-            // Customer withdraws cash using QRIS/EDC - Cash decreases, Merchant increases
-            if (details.method === 'qris') {
+          case 'cash_withdrawal': {
+            const d = details as CashWithdrawalDetails;
+            if (d.method === 'qris') {
               get().addTransaction({
                 type: 'debit',
                 amount,
                 fromAccount: state.cashAccounts.find(acc => acc.id === 'cash_main'),
                 toAccount: state.merchantAccounts.find(acc => acc.id === 'merchant_qris'),
-                description: `Penarikan Tunai QRIS - ${details.customerName}`,
+                description: `Penarikan Tunai QRIS - ${d.customerName ?? ''}`.trim(),
                 category: 'cash_withdrawal',
-                transactionId: details.transactionId,
-                shiftId: details.shiftId
+                transactionId: d.transactionId,
+                shiftId: d.shiftId
               });
-              
-              // Update balances
               const cashAccount = state.cashAccounts.find(acc => acc.id === 'cash_main');
               const merchantAccount = state.merchantAccounts.find(acc => acc.id === 'merchant_qris');
-              
-              if (cashAccount) {
-                get().updateAccountBalance('cash_main', cashAccount.balance - amount);
-              }
-              if (merchantAccount) {
-                get().updateAccountBalance('merchant_qris', merchantAccount.balance + amount);
-              }
+              if (cashAccount) get().updateAccountBalance('cash_main', cashAccount.balance - amount);
+              if (merchantAccount) get().updateAccountBalance('merchant_qris', merchantAccount.balance + amount);
             }
             break;
-            
-          case 'qris_payment':
-            // Direct QRIS payment - only merchant balance increases
+          }
+          case 'qris_payment': {
+            const d = details as QrisPaymentDetails;
             get().addTransaction({
               type: 'credit',
               amount,
               toAccount: state.merchantAccounts.find(acc => acc.id === 'merchant_qris'),
-              description: `Pembayaran QRIS - ${details.customerName}`,
+              description: `Pembayaran QRIS - ${d.customerName ?? ''}`.trim(),
               category: 'qris_payment',
-              transactionId: details.transactionId,
-              shiftId: details.shiftId
+              transactionId: d.transactionId,
+              shiftId: d.shiftId
             });
-            
             const merchantAccount = state.merchantAccounts.find(acc => acc.id === 'merchant_qris');
             if (merchantAccount) {
               get().updateAccountBalance('merchant_qris', merchantAccount.balance + amount);
             }
             break;
-            
-          case 'transfer':
-            // Bank transfer between accounts
-            const fromAccount = state.getAllAccounts().find(acc => acc.id === details.fromAccountId);
-            const toAccount = state.getAllAccounts().find(acc => acc.id === details.toAccountId);
-            
+          }
+          case 'transfer': {
+            const td = details as TransferDetails;
+            const fromAccount = state.getAllAccounts().find(acc => acc.id === td.fromAccountId);
+            const toAccount = state.getAllAccounts().find(acc => acc.id === td.toAccountId);
             if (fromAccount && toAccount) {
               get().addTransaction({
                 type: 'debit',
@@ -215,14 +231,14 @@ export const useFinancialStore = create<FinancialState>()(
                 toAccount,
                 description: `Transfer ${fromAccount.name} ke ${toAccount.name}`,
                 category: 'transfer',
-                shiftId: details.shiftId,
-                notes: details.notes
+                shiftId: td.shiftId,
+                notes: td.notes
               });
-              
-              get().updateAccountBalance(details.fromAccountId, fromAccount.balance - amount);
-              get().updateAccountBalance(details.toAccountId, toAccount.balance + amount);
+              get().updateAccountBalance(td.fromAccountId, fromAccount.balance - amount);
+              get().updateAccountBalance(td.toAccountId, toAccount.balance + amount);
             }
             break;
+          }
         }
       },
       
@@ -230,12 +246,10 @@ export const useFinancialStore = create<FinancialState>()(
       startShiftFinancials: (shiftId, userId, userName) => {
         const state = get();
         const allAccounts = state.getAllAccounts();
-        
         const openingBalance: Record<string, number> = {};
         allAccounts.forEach(account => {
           openingBalance[account.id] = account.balance;
         });
-        
         const shiftSummary: ShiftFinancialSummary = {
           shiftId,
           startTime: new Date(),
@@ -250,33 +264,27 @@ export const useFinancialStore = create<FinancialState>()(
           discrepancies: [],
           isHandedOver: false
         };
-        
         set({ currentShiftSummary: shiftSummary });
       },
       
       endShiftFinancials: (shiftId, actualBalances, notes) => {
         const state = get();
         if (!state.currentShiftSummary || state.currentShiftSummary.shiftId !== shiftId) return;
-        
         const allAccounts = state.getAllAccounts();
-        const discrepancies: any[] = [];
-        
-        // Check for discrepancies
+        const discrepancies: Array<{
+          accountId: string;
+          expected: number;
+          actual: number;
+          difference: number;
+        }> = [];
         allAccounts.forEach(account => {
           const expected = account.balance;
           const actual = actualBalances[account.id] || 0;
           const difference = actual - expected;
-          
-          if (Math.abs(difference) > 0.01) { // Allow for small rounding differences
-            discrepancies.push({
-              accountId: account.id,
-              expected,
-              actual,
-              difference
-            });
+          if (Math.abs(difference) > 0.01) {
+            discrepancies.push({ accountId: account.id, expected, actual, difference });
           }
         });
-        
         const shiftTransactions = state.transactions.filter(tx => tx.shiftId === shiftId);
         const totalCashOut = shiftTransactions
           .filter(tx => tx.type === 'debit' && tx.fromAccount?.type === 'cash')
@@ -287,7 +295,6 @@ export const useFinancialStore = create<FinancialState>()(
         const totalQrisIn = shiftTransactions
           .filter(tx => tx.type === 'credit' && tx.toAccount?.type === 'merchant')
           .reduce((sum, tx) => sum + tx.amount, 0);
-        
         const completedSummary: ShiftFinancialSummary = {
           ...state.currentShiftSummary,
           endTime: new Date(),
@@ -301,7 +308,6 @@ export const useFinancialStore = create<FinancialState>()(
           handoverNotes: notes,
           handoverTime: new Date()
         };
-        
         set(state => ({
           shiftSummaries: [completedSummary, ...state.shiftSummaries],
           currentShiftSummary: undefined

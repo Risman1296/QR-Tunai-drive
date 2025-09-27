@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
 
     // Check employee login (phone number based)
     const employees = getEmployeesFromStorage();
-    const employee = employees.find((emp: { contactNumber: any; }) => emp.contactNumber === username);
+  const employee = employees.find((emp: { contactNumber: string }) => emp.contactNumber === username);
     
     if (!employee) {
       return NextResponse.json(
